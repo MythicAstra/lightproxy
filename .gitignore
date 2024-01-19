@@ -1,0 +1,35 @@
+run/
+
+# Gradle
+.gradle/
+**/build/
+
+# IntelliJ IDEA
+.idea/
+**/out/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse
+**/bin/
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# NetBeans
+.nb-gradle/
+dist/
+nbbuild/
+nbdist/
+nbproject/
+
+# VS Code
+.vscode/
+
+# Apple macOS
+.DS_Store

@@ -1,0 +1,50 @@
+/*
+ * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package net.sharedwonder.mc.ptbridge.packet
+
+import net.sharedwonder.mc.ptbridge.utils.ConnectionState
+import net.sharedwonder.mc.ptbridge.utils.PID_CH_HANDSHAKE
+
+enum class PacketType {
+    C2S {
+        @OptIn(ExperimentalStdlibApi::class)
+        override fun getPacketHandler(connectionState: ConnectionState, id: Int): C2SPacketHandler? {
+            return when (connectionState) {
+                ConnectionState.HANDSHAKE -> {
+                    require(id == PID_CH_HANDSHAKE) { "The connection state is 'HANDSHAKE' but the packet ID is ${id.toHexString()}, expected 0x0" }
+                    PacketHandlers.getHandshakePacketHandler()
+                }
+                ConnectionState.PLAY -> PacketHandlers.C2S_PLAY_PACKET_HANDLERS[id]
+                ConnectionState.LOGIN -> PacketHandlers.C2S_LOGIN_PACKET_HANDLERS[id]
+                ConnectionState.STATUS -> PacketHandlers.C2S_STATUS_PACKET_HANDLERS[id]
+            }
+        }
+    },
+
+    S2C {
+        override fun getPacketHandler(connectionState: ConnectionState, id: Int): S2CPacketHandler? {
+            return when (connectionState) {
+                ConnectionState.HANDSHAKE -> throw IllegalArgumentException("The connection state 'HANDSHAKE' is not available for S2C (server to client) packets")
+                ConnectionState.PLAY -> PacketHandlers.S2C_PLAY_PACKET_HANDLERS[id]
+                ConnectionState.LOGIN -> PacketHandlers.S2C_LOGIN_PACKET_HANDLERS[id]
+                ConnectionState.STATUS -> PacketHandlers.S2C_STATUS_PACKET_HANDLERS[id]
+            }
+        }
+    };
+
+    abstract fun getPacketHandler(connectionState: ConnectionState, id: Int): PacketHandler?
+}
