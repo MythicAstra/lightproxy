@@ -23,7 +23,7 @@ import java.util.jar.JarFile
 import org.apache.logging.log4j.LogManager
 
 object AddonLoader {
-    private const val METAFILE_NAME: String = "ptbridge-addon.json"
+    private const val INFO_FILE_NAME: String = "ptbridge-addon.json"
 
     private val LOGGER = LogManager.getLogger(AddonLoader::class.java)
 
@@ -60,7 +60,7 @@ object AddonLoader {
         val info: AddonInfo
         try {
             JarFile(file).use {
-                it.getInputStream(it.getJarEntry(METAFILE_NAME)).reader().use { reader ->
+                it.getInputStream(it.getJarEntry(INFO_FILE_NAME)).reader().use { reader ->
                     info = GSON.fromJson(reader, AddonInfo::class.java)
                 }
             }
@@ -69,21 +69,21 @@ object AddonLoader {
             return false
         }
 
-        val entryInstance: AddonEntry
+        val initializer: AddonInitializer
         try {
             val classLoader = URLClassLoader(arrayOf(file.toURI().toURL()))
-            entryInstance = classLoader.loadClass(info.entry).getConstructor().newInstance() as AddonEntry
+            initializer = classLoader.loadClass(info.initializer).getConstructor().newInstance() as AddonInitializer
         } catch (exception: NullPointerException) {
             LOGGER.error("Invalid addon info: {}", file.name, exception)
             return false
         } catch (exception: ClassNotFoundException) {
-            LOGGER.error("Addon entry class not found: {}", file.name, exception)
+            LOGGER.error("Addon initializer class not found: {}", file.name, exception)
             return false
         } catch (exception: ReflectiveOperationException) {
-            LOGGER.error("Invalid addon entry class: {}", file.name, exception)
+            LOGGER.error("Invalid addon initializer class: {}", file.name, exception)
             return false
         } catch (exception: ClassCastException) {
-            LOGGER.error("Invalid addon entry class: {}", file.name, exception)
+            LOGGER.error("Invalid addon initializer class: {}", file.name, exception)
             return false
         } catch (exception: Exception) {
             LOGGER.error("Unknown error while loading the addon: {}", file.name, exception)
@@ -92,7 +92,7 @@ object AddonLoader {
 
         try {
             ADDONS[info.id] = info
-            entryInstance.init()
+            initializer.init()
         } catch (exception: Throwable) {
             LOGGER.error("Exception thrown while initializing the addon: {}", file.name, exception)
             ADDONS.remove(info.id)

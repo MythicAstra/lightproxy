@@ -141,15 +141,15 @@ public abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAd
         }
     }
 
-    private void send(@NotNull EncryptionContext encryptionContext, @NotNull ByteBuf out) {
-        ByteBuf message;
+    private void send(@NotNull EncryptionContext encryptionContext, @NotNull ByteBuf message) {
+        ByteBuf out;
         if (encryptionContext.isEnabled()) {
-            message = encryptionContext.encrypt(packetType, out);
-            out.release();
+            out = encryptionContext.encrypt(packetType, message);
+            message.release();
         } else {
-            message = out;
+            out = message;
         }
-        sendMessage(message).addListener((ChannelFutureListener) listener -> {
+        sendMessage(out).addListener((ChannelFutureListener) listener -> {
             if (!listener.isSuccess()) {
                 listener.channel().close();
             }

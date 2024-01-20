@@ -16,6 +16,6 @@
 
 package net.sharedwonder.mc.ptbridge.addon;
 
-public interface AddonEntry {
+public interface AddonInitializer {
     void init() throws Throwable;
 }

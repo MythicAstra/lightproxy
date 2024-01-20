@@ -22,5 +22,5 @@ data class AddonInfo(
     val version: String,
     val description: String?,
     val author: String?,
-    val entry: String
+    val initializer: String
 )

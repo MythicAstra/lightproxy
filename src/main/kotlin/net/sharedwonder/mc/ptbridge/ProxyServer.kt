@@ -149,8 +149,7 @@ class ProxyServer(val bindPort: Int, host: String, port: Int, accountsFile: File
             var isModified = false
             for (entry in accounts) {
                 val (username, uuid, auth) = entry.value
-                if (auth == null) continue
-                if (System.currentTimeMillis() >= auth.expirationTime) {
+                if (System.currentTimeMillis() >= (auth ?: continue).expirationTime) {
                     isModified = true
                     LOGGER.info("The access token of the Minecraft account '${entry.key}' is expired, refreshing...")
                     entry.setValue(PlayerProfile(username, uuid, auth.refresh()))

@@ -20,6 +20,9 @@ import net.sharedwonder.mc.ptbridge.addon.ExternalContext
 import net.sharedwonder.mc.ptbridge.crypt.EncryptionContext
 import net.sharedwonder.mc.ptbridge.utils.ConnectionState
 import net.sharedwonder.mc.ptbridge.utils.PlayerProfile
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 import java.util.Queue
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.function.Function
@@ -54,21 +57,21 @@ class ConnectionContext internal constructor(proxyServer: ProxyServer) {
 
     private var _clientAddress: String? = null
     var clientAddress: String
-        get() = _clientAddress ?: throw RuntimeException("clientAddress is not set")
+        get() = checkNotNull(_clientAddress) { "clientAddress is not set" }
         set(value) {
             _clientAddress = value
         }
 
     private var _protocolVersion: Int? = null
     var protocolVersion: Int
-        get() = _protocolVersion ?: throw RuntimeException("protocolVersion is not set")
+        get() = checkNotNull(_protocolVersion) { "protocolVersion is not set" }
         set(value) {
             _protocolVersion = value
         }
 
     private var _playerUsername: String? = null
     var playerUsername: String
-        get() = _playerUsername ?: throw RuntimeException("playerUsername is not set")
+        get() = checkNotNull(_playerUsername) { "playerUsername is not set" }
         set(value) {
             _playerUsername = value
         }
