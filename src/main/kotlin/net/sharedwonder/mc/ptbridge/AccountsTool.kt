@@ -61,12 +61,12 @@ fun addMinecraftAccount(accountsFile: File, accountType: String): Int {
             }
 
             else -> {
-                System.err.println("Unknown account type '$accountType', supported types: 'msa', 'mojang'")
+                System.err.println("Unknown account type '$accountType', it must be one of: 'msa', 'mojang'")
                 return 1
             }
         }
     } catch (exception: Throwable) {
-        System.err.println("Error while adding a Minecraft account")
+        System.err.println("An error occurred while adding a Minecraft account")
         exception.printStackTrace()
         return 1
     }
@@ -84,7 +84,7 @@ fun removeMinecraftAccount(accountsFile: File, username: String): Int {
         println("Successfully removed the specified Minecraft account")
         return 0
     } catch (exception: Throwable) {
-        System.err.println("Error while removing a Minecraft account")
+        System.err.println("An error occurred while removing a Minecraft account")
         exception.printStackTrace()
         return 1
     }

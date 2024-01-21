@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalStdlibApi::class)
-
 package net.sharedwonder.mc.ptbridge.utils
 
 import java.util.UUID
 
 object UUIDUtils {
     @JvmStatic
+    @OptIn(ExperimentalStdlibApi::class)
     fun stringToUuid(uuid: String): UUID = UUID(uuid.take(16).hexToLong(), uuid.substring(16).hexToLong())
 
     @JvmStatic
+    @OptIn(ExperimentalStdlibApi::class)
     fun uuidToString(uuid: UUID): String = "${uuid.mostSignificantBits.toHexString()}${uuid.leastSignificantBits.toHexString()}"
 }

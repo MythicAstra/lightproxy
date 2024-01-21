@@ -55,7 +55,7 @@ class MCAuthWithMSA(tokenType: MSAAuthTokenType, authToken: String) : MCAuth {
         }.response.contentAsString
 
         val jsonResponse = GSON.fromJson(response, JsonObject::class.java)
-        return PlayerProfile(jsonResponse.get("name").asString, convertToUuid(jsonResponse.get("id").asString), this)
+        return PlayerProfile(jsonResponse["name"].asString, convertToUuid(jsonResponse["id"].asString), this)
     }
 }
 
@@ -97,8 +97,8 @@ private fun xboxLiveAuthStep(msaToken: String): Pair<String, String> {
         .onFailure { throw buildException("Failed to get the Xbox access token") }.response.contentAsString
     val json = GSON.fromJson(content, JsonObject::class.java)
 
-    val token = json.get("Token").asString
-    val userHash = json.get("DisplayClaims").asJsonObject.get("xui").asJsonArray[0].asJsonObject.get("uhs").asString
+    val token = json["Token"].asString
+    val userHash = json["DisplayClaims"].asJsonObject["xui"].asJsonArray[0].asJsonObject["uhs"].asString
     return token to userHash
 }
 
@@ -115,7 +115,7 @@ private fun xstsAuthStep(xboxToken: String): String {
 
     val content = HTTPRequestUtils.request(XSTS_AUTH_URL, "POST", "application/json; charset=utf-8", GSON.toJson(body))
         .onFailure { throw buildException("Failed to get the XSTS access token") }.response.contentAsString
-    return GSON.fromJson(content, JsonObject::class.java).get("Token").asString
+    return GSON.fromJson(content, JsonObject::class.java)["Token"].asString
 }
 
 private fun mcAuthStep(xstsToken: String, xboxUserHash: String): MCAuthResponse {

@@ -17,11 +17,10 @@
 package net.sharedwonder.mc.ptbridge
 
 import net.sharedwonder.mc.ptbridge.utils.GSON
-import com.google.gson.JsonObject
 
 object MetaInfo {
     const val ID = "ptbridge"
 
     @JvmField val VERSION: String = GSON.fromJson(javaClass.classLoader.getResourceAsStream("META-INF/net.sharedwonder.mc.ptbridge.json")!!
-        .reader(Charsets.UTF_8), JsonObject::class.java).get("version").asString
+        .reader(Charsets.UTF_8), Map::class.java)["version"] as String
 }

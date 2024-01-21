@@ -39,7 +39,7 @@ object HTTPRequestUtils {
             is ByteArray -> body
             is String -> body.toByteArray()
             is CharSequence -> body.toString().toByteArray()
-            else -> throw IllegalArgumentException("Cannot convert thr argument 'body' to a byte array, type of 'body': ${body.javaClass.name}")
+            else -> throw IllegalArgumentException("Cannot convert thr argument 'body' to a byte array, type of 'body': ${body.javaClass.typeName}")
         }
 
         val connection: HttpURLConnection

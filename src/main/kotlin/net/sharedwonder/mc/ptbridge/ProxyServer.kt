@@ -59,7 +59,7 @@ class ProxyServer(val bindPort: Int, host: String, port: Int, accountsFile: File
                     }
                 }
             } catch (exception: Exception) {
-                LOGGER.error("Error while processing Minecraft accounts data: $exception")
+                LOGGER.error("An error occurred while processing Minecraft accounts data: $exception")
             }
 
             this.minecraftAccounts = minecraftAccounts

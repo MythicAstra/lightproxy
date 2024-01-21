@@ -94,7 +94,7 @@ class ConnectionContext internal constructor(proxyServer: ProxyServer) {
                 try {
                     externalContext.onConnect()
                 } catch (exception: Throwable) {
-                    LOGGER.error("Error while calling onConnect on ${externalContext.javaClass.name}", exception)
+                    LOGGER.error("An error occurred while calling onConnect on ${externalContext.javaClass.typeName}", exception)
                 }
             }.apply { start() })
         }
@@ -109,7 +109,7 @@ class ConnectionContext internal constructor(proxyServer: ProxyServer) {
                 try {
                     externalContext.onDisconnect()
                 } catch (exception: Throwable) {
-                    LOGGER.error("Error while calling onDisconnect on ${externalContext.javaClass.name}", exception)
+                    LOGGER.error("An error occurred while calling onDisconnect on ${externalContext.javaClass.typeName}", exception)
                 }
             }.apply { start() })
         }

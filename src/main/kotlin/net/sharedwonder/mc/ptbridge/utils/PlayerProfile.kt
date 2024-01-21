@@ -57,7 +57,7 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
             json.addProperty("uuid", src.uuid.toString())
             if (src.auth != null) {
                 json.add("auth", JsonObject().apply {
-                    addProperty("impl", src.auth.javaClass.name)
+                    addProperty("impl", src.auth.javaClass.typeName)
                     add("data", context.serialize(src.auth))
                 })
             }
@@ -70,15 +70,13 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
             try {
                 json as JsonObject
 
-                val username = json.get("username")!!.asString
-                val uuid = UUID.fromString(json.get("uuid")!!.asString)
-                val auth = json.get("auth")?.let {
-                    if (it.isJsonNull) {
-                        null
-                    } else {
+                val username = json["username"].asString
+                val uuid = UUID.fromString(json["uuid"].asString)
+                val auth = json["auth"]?.let {
+                    if (!it.isJsonNull) {
                         it as JsonObject
-                        val impl = it.get("impl")!!.asString
-                        val content = it.get("data")!!
+                        val impl = it["impl"].asString
+                        val content = it["data"]
                         try {
                             context.deserialize<MCAuth>(content, Class.forName(impl))
                         } catch (exception: ClassCastException) {
@@ -86,7 +84,7 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
                         } catch (exception: ClassNotFoundException) {
                             throw RuntimeException("MCAuth implementation not found: $impl")
                         }
-                    }
+                    } else null
                 }
 
                 return PlayerProfile(username, uuid, auth)

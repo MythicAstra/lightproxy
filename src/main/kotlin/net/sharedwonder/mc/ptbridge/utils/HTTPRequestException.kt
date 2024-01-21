@@ -24,14 +24,7 @@ class HTTPRequestException : RuntimeException {
     val responseContent: String?
 
     override val message: String?
-        get() {
-            val message = super.message ?: return null
-            if (responseCode != null && responseContent != null) {
-                return "$message\n- Response code: $responseCode" +
-                    if (responseContent.isEmpty()) "" else "\n- Response content: $responseContent"
-            }
-            return message
-        }
+        get() = if (super.message == null) additionalInfo() else super.message + (additionalInfo() ?: "")
 
     constructor(message: String?, responseCode: Int, responseContent: String) : super(message) {
         this.responseCode = responseCode
@@ -42,6 +35,12 @@ class HTTPRequestException : RuntimeException {
         responseCode = null
         responseContent = null
     }
+
+    private fun additionalInfo(): String? =
+        if (responseCode != null) {
+            "\n- Response code: $responseCode" +
+                (if (responseContent != null) "\n- Response content: $responseContent" else "")
+        } else null
 
     private companion object {
         @Serial private const val serialVersionUID = 3653710697125111531L
