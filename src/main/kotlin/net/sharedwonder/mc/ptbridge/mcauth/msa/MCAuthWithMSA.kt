@@ -20,8 +20,8 @@ import net.sharedwonder.mc.ptbridge.mcauth.MCAuth
 import net.sharedwonder.mc.ptbridge.utils.GSON
 import net.sharedwonder.mc.ptbridge.utils.HTTPRequestUtils
 import net.sharedwonder.mc.ptbridge.utils.PlayerProfile
+import net.sharedwonder.mc.ptbridge.utils.UUIDUtils
 import java.net.URI
-import java.util.UUID
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 
@@ -55,7 +55,7 @@ class MCAuthWithMSA(tokenType: MSAAuthTokenType, authToken: String) : MCAuth {
         }.response.contentAsString
 
         val jsonResponse = GSON.fromJson(response, JsonObject::class.java)
-        return PlayerProfile(jsonResponse["name"].asString, convertToUuid(jsonResponse["id"].asString), this)
+        return PlayerProfile(jsonResponse["name"].asString, UUIDUtils.stringToUuid(jsonResponse["id"].asString), this)
     }
 }
 
@@ -126,9 +126,4 @@ private fun mcAuthStep(xstsToken: String, xboxUserHash: String): MCAuthResponse 
         .onFailure { throw buildException("Failed to get the Minecraft access token") }.response.contentAsString
 
     return GSON.fromJson(content, MCAuthResponse::class.java)
-}
-
-private fun convertToUuid(string: String): UUID {
-    val formattedUUIDString = "${string.take(8)}-${string.substring(8, 12)}-${string.substring(12, 16)}-${string.substring(16, 20)}-${string.substring(20)}"
-    return UUID.fromString(formattedUUIDString)
 }

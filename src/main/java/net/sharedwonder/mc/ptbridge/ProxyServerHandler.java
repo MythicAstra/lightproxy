@@ -59,7 +59,7 @@ public final class ProxyServerHandler extends ProxyChannelHandler {
             if (listener.isSuccess()) {
                 channel.config().setAutoRead(true);
             } else {
-                LOGGER.error("Failed to connect to the remote host: {}", socketAddress);
+                LOGGER.error("Failed to connect to the remote host: " + socketAddress);
                 if (channel.isActive()) {
                     channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
                 }

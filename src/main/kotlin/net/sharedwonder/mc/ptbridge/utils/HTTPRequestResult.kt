@@ -67,7 +67,7 @@ sealed class HTTPRequestResult {
 
     class SuccessResponse(override val status: Int, override val content: ByteArray) : HTTPRequestResult(), Response
 
-    class ErrorResponse(override val status: Int, override val content: ByteArray) : HTTPRequestResult(), Failure, Response {
+    class ErrorResponse(override val status: Int, override val content: ByteArray) : HTTPRequestResult(), Response, Failure {
         override fun buildException(errorMessage: String?): HTTPRequestException = HTTPRequestException(errorMessage, status, contentAsString)
     }
 

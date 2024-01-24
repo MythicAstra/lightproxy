@@ -35,7 +35,7 @@ public class CLRequestLogin implements C2SPacketHandler {
     @Override
     public @NotNull HandledFlag handle(@NotNull ConnectionContext connectionContext, @NotNull ByteBuf in, @NotNull ByteBuf transformed) {
         connectionContext.setPlayerUsername(PacketUtils.readUtf8String(in));
-        LOGGER.info("Player '{}' requested to login", connectionContext.getPlayerUsername());
+        LOGGER.info("Player '" + connectionContext.getPlayerUsername() + "' requested to login");
         return HandledFlag.PASSED;
     }
 

@@ -138,7 +138,7 @@ class ProxyServer(val bindPort: Int, host: String, port: Int, accountsFile: File
             dirContext.close()
 
             val srv = attributes["srv"].get().toString()
-            LOGGER.info("Found SRV record on {}: {}", domain, srv)
+            LOGGER.info("Found a SRV record on $domain: $srv")
 
             val content = srv.split(' ')
             return content[3] to content[2].toInt()
@@ -152,7 +152,11 @@ class ProxyServer(val bindPort: Int, host: String, port: Int, accountsFile: File
                 if (System.currentTimeMillis() >= (auth ?: continue).expirationTime) {
                     isModified = true
                     LOGGER.info("The access token of the Minecraft account '${entry.key}' is expired, refreshing...")
-                    entry.setValue(PlayerProfile(username, uuid, auth.refresh()))
+                    try {
+                        entry.setValue(PlayerProfile(username, uuid, auth.refresh()))
+                    } catch (exception: RuntimeException) {
+                        LOGGER.error("Failed to refresh the access token of the Minecraft account '${entry.key}'", exception)
+                    }
                 }
             }
             return isModified
