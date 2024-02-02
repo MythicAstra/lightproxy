@@ -18,10 +18,12 @@ plugins {
 group = "net.sharedwonder.mc"
 version = "0.1.0"
 
+val S5W5_REPO = "https://maven.pkg.github.com/sharedwonder/maven-repository"
+
 repositories {
     mavenLocal()
     mavenCentral()
-    maven("https://maven.pkg.github.com/sharedwonder/maven-repository")
+    maven(S5W5_REPO)
 }
 
 dependencies {
@@ -60,7 +62,7 @@ publishing {
 
     repositories {
         mavenLocal()
-        maven("https://maven.pkg.github.com/sharedwonder/maven-repository") {
+        maven(S5W5_REPO) {
             credentials {
                 username = findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
                 password = findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")

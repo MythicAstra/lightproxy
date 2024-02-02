@@ -24,11 +24,14 @@ import java.util.UUID
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
+import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
+import com.google.gson.annotations.JsonAdapter
 
+@JsonAdapter(PlayerProfile.JsonTypeAdapter::class)
 data class PlayerProfile @JvmOverloads constructor(val username: String, val uuid: UUID, val auth: MCAuth? = null) {
     fun joinServer(serverId: ByteArray) {
         if (auth == null) throw UnsupportedOperationException("This player profile has no authentication information")
@@ -50,8 +53,11 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
         }.response).status == HttpURLConnection.HTTP_OK
     }
 
-    class Serializer : JsonSerializer<PlayerProfile> {
-        override fun serialize(src: PlayerProfile, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
+    internal class JsonTypeAdapter : JsonSerializer<PlayerProfile>, JsonDeserializer<PlayerProfile> {
+        override fun serialize(src: PlayerProfile?, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
+            if (src == null) {
+                return JsonNull.INSTANCE
+            }
             val json = JsonObject()
             json.addProperty("username", src.username)
             json.addProperty("uuid", src.uuid.toString())
@@ -63,9 +69,7 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
             }
             return json
         }
-    }
 
-    class Deserializer : JsonDeserializer<PlayerProfile> {
         override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): PlayerProfile {
             try {
                 json as JsonObject

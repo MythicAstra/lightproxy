@@ -23,8 +23,7 @@ class HTTPRequestException : RuntimeException {
 
     val responseContent: String?
 
-    override val message: String?
-        get() = if (super.message == null) additionalInfo() else super.message + (additionalInfo() ?: "")
+    override val message: String? get() = if (super.message == null) additionalInfo() else super.message + (additionalInfo() ?: "")
 
     constructor(message: String?, responseCode: Int, responseContent: String) : super(message) {
         this.responseCode = responseCode

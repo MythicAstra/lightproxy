@@ -19,11 +19,6 @@
 package net.sharedwonder.mc.ptbridge.utils
 
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 
-@get:JvmName("getGson") val GSON: Gson = run {
-    val builder = GsonBuilder()
-    builder.registerTypeAdapter(PlayerProfile::class.java, PlayerProfile.Serializer())
-    builder.registerTypeAdapter(PlayerProfile::class.java, PlayerProfile.Deserializer())
-    builder.create()
-}
+@get:JvmName("getGson")
+val GSON: Gson = Gson()
