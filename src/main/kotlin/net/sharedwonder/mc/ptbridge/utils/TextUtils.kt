@@ -19,7 +19,7 @@ package net.sharedwonder.mc.ptbridge.utils
 import com.google.gson.JsonObject
 
 object TextUtils {
-    private val FORMATTING_REGEX = Regex("§[0-9a-fk-or]", RegexOption.IGNORE_CASE)
+    @JvmField val FORMATTING_REGEX: Regex = Regex("§[0-9a-fk-or]", RegexOption.IGNORE_CASE)
 
     @JvmStatic
     fun serialize(text: String): String {
