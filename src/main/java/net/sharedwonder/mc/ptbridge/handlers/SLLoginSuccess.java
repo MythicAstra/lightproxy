@@ -35,7 +35,7 @@ public class SLLoginSuccess implements S2CPacketHandler {
     @Override
     public @NotNull HandledFlag handle(@NotNull ConnectionContext connectionContext, @NotNull ByteBuf in, @NotNull ByteBuf transformed) {
         connectionContext.setConnectionState(ConnectionState.PLAY);
-        LOGGER.info("Player '" + connectionContext.getPlayerUsername() + "' successfully logged in");
+        LOGGER.info("Client successfully logged in, username: " + connectionContext.getPlayerUsername());
         return HandledFlag.PASSED;
     }
 

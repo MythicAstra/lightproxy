@@ -26,6 +26,8 @@ import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
 import net.sharedwonder.mc.ptbridge.utils.Constants;
 import java.util.Arrays;
 import io.netty.buffer.ByteBuf;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 public class CLEncryptionResponse implements C2SPacketHandler {
@@ -70,6 +72,10 @@ public class CLEncryptionResponse implements C2SPacketHandler {
         PacketUtils.writeByteArray(transformed, CryptUtils.encryptData(handshakingContext.originServerPublicKey, proxyServerSecretKey.getEncoded()));
         PacketUtils.writeByteArray(transformed, CryptUtils.encryptData(handshakingContext.originServerPublicKey, handshakingContext.verifyToken));
 
+        LOGGER.info("Client authenticated, username: " + connectionContext.getPlayerUsername());
+
         return HandledFlag.TRANSFORMED;
     }
+
+    private static final Logger LOGGER = LogManager.getLogger(CLEncryptionResponse.class);
 }
