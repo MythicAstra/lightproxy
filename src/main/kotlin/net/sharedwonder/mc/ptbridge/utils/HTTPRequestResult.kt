@@ -37,7 +37,7 @@ sealed class HTTPRequestResult {
     }
 
     @JvmSynthetic
-    inline fun <R> onErrorResponse(block: ErrorResponse.() -> R): HTTPRequestResult {
+    inline fun <R> ifErrorResponse(block: ErrorResponse.() -> R): HTTPRequestResult {
         if (this is ErrorResponse) {
             block(this)
         }
@@ -45,8 +45,8 @@ sealed class HTTPRequestResult {
     }
 
     @JvmSynthetic
-    inline fun <R> onExceptionThrown(block: ExceptionThrown.() -> R): HTTPRequestResult {
-        if (this is ExceptionThrown) {
+    inline fun <R> ifInterruptedByException(block: InterruptedByException.() -> R): HTTPRequestResult {
+        if (this is InterruptedByException) {
             block(this)
         }
         return this
@@ -57,21 +57,21 @@ sealed class HTTPRequestResult {
 
         val content: ByteArray
 
-        val contentAsString: String
+        val contentAsUtf8String: String
             get() = content.toString(Charsets.UTF_8)
     }
 
     sealed interface Failure {
-        fun buildException(errorMessage: String? = null): HTTPRequestException
+        fun buildException(message: String? = null): HTTPRequestException
     }
 
     class SuccessResponse(override val status: Int, override val content: ByteArray) : HTTPRequestResult(), Response
 
     class ErrorResponse(override val status: Int, override val content: ByteArray) : HTTPRequestResult(), Response, Failure {
-        override fun buildException(errorMessage: String?): HTTPRequestException = HTTPRequestException(errorMessage, status, contentAsString)
+        override fun buildException(message: String?): HTTPRequestException = HTTPRequestException(message, status, contentAsUtf8String)
     }
 
-    class ExceptionThrown(val exception: Throwable) : HTTPRequestResult(), Failure {
-        override fun buildException(errorMessage: String?): HTTPRequestException = HTTPRequestException(errorMessage, exception)
+    class InterruptedByException(val exception: Throwable) : HTTPRequestResult(), Failure {
+        override fun buildException(message: String?): HTTPRequestException = HTTPRequestException(message, exception)
     }
 }

@@ -1,3 +1,6 @@
+import com.google.gson.Gson
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 buildscript {
     repositories {
         mavenLocal()
@@ -18,12 +21,12 @@ plugins {
 group = "net.sharedwonder.mc"
 version = "0.1.0"
 
-val S5W5_REPO = "https://maven.pkg.github.com/sharedwonder/maven-repository"
+val S5W5_GPR_URL = "https://maven.pkg.github.com/sharedwonder/maven-repository"
 
 repositories {
     mavenLocal()
     mavenCentral()
-    maven(S5W5_REPO)
+    maven(S5W5_GPR_URL)
 }
 
 dependencies {
@@ -35,7 +38,7 @@ dependencies {
     implementation("io.netty:netty-codec")
     implementation("io.netty:netty-common")
     implementation("org.apache.logging.log4j:log4j-api")
-    implementation("org.jetbrains:annotations:24.0.1")
+    compileOnly("org.jetbrains:annotations:24.0.1")
     runtimeOnly("org.apache.logging.log4j:log4j-core")
 
     testImplementation(platform("org.junit:junit-bom:5.9.3"))
@@ -49,20 +52,21 @@ java {
 }
 
 kotlin {
-    compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
     compilerOptions.freeCompilerArgs.add("-Xjvm-default=all")
 }
 
 publishing {
     publications {
-        create<MavenPublication>(name) {
+        create<MavenPublication>("maven") {
             from(components["java"])
         }
     }
 
     repositories {
         mavenLocal()
-        maven(S5W5_REPO) {
+        maven(S5W5_GPR_URL) {
+            name = "GitHubPackages"
             credentials {
                 username = findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
                 password = findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
@@ -89,11 +93,13 @@ tasks.test {
 }
 
 val generateResources by tasks.registering {
-    doFirst {
-        val file = File("${layout.buildDirectory.get().asFile}/generated/resources/main/META-INF/${project.group}.${project.name}.json")
+    val file = File("${layout.buildDirectory.get().asFile}/generated/resources/main/META-INF/${project.group}.${project.name}.json")
+    outputs.file(file)
+
+    doLast {
         file.parentFile.deleteRecursively()
         file.parentFile.mkdirs()
-        file.writer().use { com.google.gson.Gson().toJson(mapOf("version" to version), Map::class.java, it) }
+        file.writer().use { Gson().toJson(mapOf("version" to version), Map::class.java, it) }
     }
 }
 

@@ -69,7 +69,7 @@ object HTTPRequestUtils {
                 connection.disconnect()
             }
         } catch (exception: Throwable) {
-            return HTTPRequestResult.ExceptionThrown(exception)
+            return HTTPRequestResult.InterruptedByException(exception)
         }
     }
 
@@ -86,10 +86,10 @@ object HTTPRequestUtils {
         request(url, method, contentType, body) { block?.accept(this) }
 
     @JvmStatic
-    fun joinParameters(baseUrl: String, params: Map<String, String>): String = baseUrl + '?' + encodeParameters(params)
+    fun joinParameters(baseUrl: String, params: Map<String, String>): String = baseUrl + '?' + encodeMap(params)
 
     @JvmStatic
-    fun encodeParameters(params: Map<String, String>): String {
+    fun encodeMap(params: Map<String, String>): String {
         val builder = StringBuilder()
         for ((key, value) in params) {
             if (builder.isNotEmpty()) {
