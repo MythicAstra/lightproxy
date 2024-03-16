@@ -26,12 +26,12 @@ import java.util.function.Consumer
 object HTTPRequestUtils {
     @JvmStatic
     @JvmSynthetic
-    fun request(url: String, method: String = "GET", contentType: String? = null, body: Any? = null, block: (HttpURLConnection.() -> Unit)? = null): HTTPRequestResult =
+    fun request(url: String, method: String = "GET", contentType: String? = null, body: Any? = null, block: HttpURLConnection.() -> Unit = {}): HTTPRequestResult =
         request(stringToUrl(url), method, contentType, body, block)
 
     @JvmStatic
     @JvmSynthetic
-    fun request(url: URL, method: String = "GET", contentType: String? = null, body: Any? = null, block: (HttpURLConnection.() -> Unit)? = null): HTTPRequestResult {
+    fun request(url: URL, method: String = "GET", contentType: String? = null, body: Any? = null, block: HttpURLConnection.() -> Unit = {}): HTTPRequestResult {
         require(url.protocol == "http" || url.protocol == "https") { "Protocol of the URL should be HTTP/HTTPS, but was ${url.protocol.uppercase()}" }
 
         val bytes = when (body) {
@@ -57,7 +57,7 @@ object HTTPRequestUtils {
                         it.flush()
                     }
                 }
-                block?.invoke(connection)
+                block.invoke(connection)
 
                 val status = connection.responseCode
                 return if (status >= 400) {
@@ -76,14 +76,14 @@ object HTTPRequestUtils {
     @JvmStatic
     @JvmOverloads
     @JvmName("request")
-    fun _request(url: String, method: String = "GET", contentType: String? = null, body: Any? = null, block: Consumer<in HttpURLConnection>? = null): HTTPRequestResult =
-        request(url, method, contentType, body) { block?.accept(this) }
+    fun _request(url: String, method: String = "GET", contentType: String? = null, body: Any? = null, block: Consumer<in HttpURLConnection> = Consumer {}): HTTPRequestResult =
+        request(url, method, contentType, body) { block.accept(this) }
 
     @JvmStatic
     @JvmOverloads
     @JvmName("request")
-    fun _request(url: URL, method: String = "GET", contentType: String? = null, body: Any? = null, block: Consumer<in HttpURLConnection>? = null): HTTPRequestResult =
-        request(url, method, contentType, body) { block?.accept(this) }
+    fun _request(url: URL, method: String = "GET", contentType: String? = null, body: Any? = null, block: Consumer<in HttpURLConnection> = Consumer {}): HTTPRequestResult =
+        request(url, method, contentType, body) { block.accept(this) }
 
     @JvmStatic
     fun joinParameters(baseUrl: String, params: Map<String, String>): String = baseUrl + '?' + encodeMap(params)

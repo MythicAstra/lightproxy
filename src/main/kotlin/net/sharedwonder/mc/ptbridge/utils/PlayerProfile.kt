@@ -20,6 +20,8 @@ import net.sharedwonder.mc.ptbridge.mcauth.MCAuth
 import java.lang.reflect.Type
 import java.math.BigInteger
 import java.net.HttpURLConnection
+import java.net.URI
+import java.net.URL
 import java.util.UUID
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
@@ -39,18 +41,18 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
         body.addProperty("accessToken", auth.accessToken)
         body.addProperty("selectedProfile", uuid.toString())
         body.addProperty("serverId", BigInteger(serverId).toString(16))
-        HTTPRequestUtils.request("https://sessionserver.mojang.com/session/minecraft/join", "POST", "application/json; charset=utf-8", GSON.toJson(body))
+        HTTPRequestUtils.request(JOIN_SERVER_URL, "POST", "application/json; charset=utf-8", GSON.toJson(body))
             .onFailure { throw buildException("Failed to request to join the server for player the '$username/${UUIDUtils.uuidToString(uuid)}' on the Minecraft session service") }
     }
 
     @JvmOverloads
-    fun hasJoinedServer(serverId: ByteArray, playerIp: String? = null): Boolean {
+    fun hasJoinedServer(serverId: ByteArray, clientIp: String? = null): Boolean {
         val p1 = "username" to username
         val p2 = "serverId" to BigInteger(serverId).toString(16)
-        val args = if (playerIp != null) mapOf(p1, p2, "ip" to playerIp) else mapOf(p1, p2)
-        return (HTTPRequestUtils.request(HTTPRequestUtils.joinParameters("https://sessionserver.mojang.com/session/minecraft/hasJoined", args)).onFailure {
-            throw buildException("Failed to request whether the player '$username/${UUIDUtils.uuidToString(uuid)}' has joined the server on the Minecraft session service")
-        }.response).status == HttpURLConnection.HTTP_OK
+        val args = if (clientIp != null) mapOf(p1, p2, "ip" to clientIp) else mapOf(p1, p2)
+        return (HTTPRequestUtils.request(HTTPRequestUtils.joinParameters("https://sessionserver.mojang.com/session/minecraft/hasJoined", args))
+            .onFailure { throw buildException("Failed to determine the player '$username/${UUIDUtils.uuidToString(uuid)}' has joined the server on the Minecraft session service") }
+            .response).status == HttpURLConnection.HTTP_OK
     }
 
     internal class JsonTypeAdapter : JsonSerializer<PlayerProfile>, JsonDeserializer<PlayerProfile> {
@@ -96,5 +98,9 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
                 throw JsonParseException("Invalid player profile: $json", exception)
             }
         }
+    }
+
+    private companion object {
+        private val JOIN_SERVER_URL: URL = URI("https://sessionserver.mojang.com/session/minecraft/join").toURL()
     }
 }

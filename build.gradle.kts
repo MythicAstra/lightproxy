@@ -1,27 +1,14 @@
-import com.google.gson.Gson
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
-buildscript {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath("com.google.code.gson:gson:2.10.1")
-    }
-}
-
 plugins {
-    kotlin("jvm")
     `maven-publish`
+    kotlin("jvm")
     id("org.jetbrains.dokka")
 }
 
+val GITHUB_REPO_URL = "https://github.com/sharedwonder/ptbridge"
+val S5W5_GPR_URL = "https://maven.pkg.github.com/sharedwonder/maven-repository"
+
 group = "net.sharedwonder.mc"
 version = "0.1.0"
-
-val S5W5_GPR_URL = "https://maven.pkg.github.com/sharedwonder/maven-repository"
 
 repositories {
     mavenLocal()
@@ -52,7 +39,7 @@ java {
 }
 
 kotlin {
-    compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
+    compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     compilerOptions.freeCompilerArgs.add("-Xjvm-default=all")
 }
 
@@ -60,6 +47,33 @@ publishing {
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
+
+            pom {
+                name = project.name
+                description = project.description
+                url = GITHUB_REPO_URL
+
+                licenses {
+                    license {
+                        name = "The Apache License, Version 2.0"
+                        url = "https://www.apache.org/licenses/LICENSE-2.0"
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = "sharedwonder"
+                        name = "Liu Baihao"
+                        email = "liubaihaohello@outlook.com"
+                    }
+                }
+
+                scm {
+                    connection = "scm:git:$GITHUB_REPO_URL.git"
+                    developerConnection = "scm:git:$GITHUB_REPO_URL.git"
+                    url = GITHUB_REPO_URL
+                }
+            }
         }
     }
 
@@ -75,37 +89,21 @@ publishing {
     }
 }
 
-tasks.compileJava {
-    options.encoding = "UTF-8"
-}
-
-tasks.processResources {
-    dependsOn(generateResources)
-    from("${layout.buildDirectory.get().asFile}/generated/resources/main")
-}
-
-tasks.jar {
-    manifest.attributes["Main-Class"] = "net.sharedwonder.mc.ptbridge.Main"
-}
-
-tasks.test {
-    useJUnitPlatform()
-}
-
-val generateResources by tasks.registering {
-    val file = File("${layout.buildDirectory.get().asFile}/generated/resources/main/META-INF/${project.group}.${project.name}.json")
-    outputs.file(file)
-
-    doLast {
-        file.parentFile.deleteRecursively()
-        file.parentFile.mkdirs()
-        file.writer().use { Gson().toJson(mapOf("version" to version), Map::class.java, it) }
+tasks {
+    withType<JavaCompile> {
+        options.encoding = "UTF-8"
     }
-}
 
-val copyDependencies by tasks.registering(Copy::class) {
-    from(configurations.runtimeClasspath)
-    val dest = "${layout.buildDirectory.get().asFile}/dependencies/main"
-    delete(dest)
-    into(dest)
+    jar {
+        manifest.attributes["Main-Class"] = "net.sharedwonder.mc.ptbridge.Main"
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+
+    register<Copy>("copyDependencies") {
+        from(configurations.runtimeClasspath)
+        into("${layout.buildDirectory.get().asFile}/dependencies/main")
+    }
 }
