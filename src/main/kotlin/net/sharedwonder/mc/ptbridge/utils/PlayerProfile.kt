@@ -16,7 +16,6 @@
 
 package net.sharedwonder.mc.ptbridge.utils
 
-import net.sharedwonder.mc.ptbridge.mcauth.MCAuth
 import java.lang.reflect.Type
 import java.math.BigInteger
 import java.net.HttpURLConnection
@@ -32,6 +31,7 @@ import com.google.gson.JsonParseException
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
 import com.google.gson.annotations.JsonAdapter
+import net.sharedwonder.mc.ptbridge.mcauth.MCAuth
 
 @JsonAdapter(PlayerProfile.JsonTypeAdapter::class)
 data class PlayerProfile @JvmOverloads constructor(val username: String, val uuid: UUID, val auth: MCAuth? = null) {

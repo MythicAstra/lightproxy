@@ -16,8 +16,8 @@
 
 package net.sharedwonder.mc.ptbridge.packet;
 
-import net.sharedwonder.mc.ptbridge.ConnectionContext;
 import io.netty.buffer.ByteBuf;
+import net.sharedwonder.mc.ptbridge.ConnectionContext;
 import org.jetbrains.annotations.NotNull;
 
 public sealed interface PacketHandler permits C2SPacketHandler, S2CPacketHandler {

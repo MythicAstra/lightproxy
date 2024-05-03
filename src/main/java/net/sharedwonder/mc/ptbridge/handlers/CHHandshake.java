@@ -16,13 +16,13 @@
 
 package net.sharedwonder.mc.ptbridge.handlers;
 
+import io.netty.buffer.ByteBuf;
 import net.sharedwonder.mc.ptbridge.ConnectionContext;
 import net.sharedwonder.mc.ptbridge.packet.C2SPacketHandler;
 import net.sharedwonder.mc.ptbridge.packet.HandledFlag;
 import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
 import net.sharedwonder.mc.ptbridge.utils.ConnectionState;
 import net.sharedwonder.mc.ptbridge.utils.Constants;
-import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 public class CHHandshake implements C2SPacketHandler {

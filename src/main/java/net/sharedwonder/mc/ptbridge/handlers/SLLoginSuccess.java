@@ -16,12 +16,12 @@
 
 package net.sharedwonder.mc.ptbridge.handlers;
 
+import io.netty.buffer.ByteBuf;
 import net.sharedwonder.mc.ptbridge.ConnectionContext;
 import net.sharedwonder.mc.ptbridge.packet.HandledFlag;
 import net.sharedwonder.mc.ptbridge.packet.S2CPacketHandler;
 import net.sharedwonder.mc.ptbridge.utils.ConnectionState;
 import net.sharedwonder.mc.ptbridge.utils.Constants;
-import io.netty.buffer.ByteBuf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -35,7 +35,7 @@ public class SLLoginSuccess implements S2CPacketHandler {
     @Override
     public @NotNull HandledFlag handle(@NotNull ConnectionContext connectionContext, @NotNull ByteBuf in, @NotNull ByteBuf transformed) {
         connectionContext.setConnectionState(ConnectionState.PLAY);
-        LOGGER.info("Client successfully logged in, username: " + connectionContext.getPlayerUsername());
+        LOGGER.info("Client successfully logged in, username: {}", connectionContext.getPlayerUsername());
         return HandledFlag.PASSED;
     }
 

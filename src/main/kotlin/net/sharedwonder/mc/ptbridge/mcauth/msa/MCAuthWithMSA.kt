@@ -16,14 +16,14 @@
 
 package net.sharedwonder.mc.ptbridge.mcauth.msa
 
+import java.net.URI
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import net.sharedwonder.mc.ptbridge.mcauth.MCAuth
 import net.sharedwonder.mc.ptbridge.utils.GSON
 import net.sharedwonder.mc.ptbridge.utils.HTTPRequestUtils
 import net.sharedwonder.mc.ptbridge.utils.PlayerProfile
 import net.sharedwonder.mc.ptbridge.utils.UUIDUtils
-import java.net.URI
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
 
 class MCAuthWithMSA(tokenType: MSAAuthTokenType, authToken: String) : MCAuth {
     override val accessToken: String

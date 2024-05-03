@@ -16,8 +16,6 @@
 
 package net.sharedwonder.mc.ptbridge.crypt;
 
-import net.sharedwonder.mc.ptbridge.packet.PacketType;
-import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
 import java.security.GeneralSecurityException;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -25,6 +23,8 @@ import javax.crypto.ShortBufferException;
 import javax.crypto.spec.IvParameterSpec;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import net.sharedwonder.mc.ptbridge.packet.PacketType;
+import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
 import org.jetbrains.annotations.NotNull;
 
 public final class EncryptionEnabledContext implements EncryptionContext {
@@ -38,18 +38,16 @@ public final class EncryptionEnabledContext implements EncryptionContext {
 
     EncryptionEnabledContext(@NotNull SecretKey clientSecretKey, @NotNull SecretKey proxyServerSecretKey) {
         try {
-            var transformation = "AES/CFB8/NoPadding";
-
-            c2sEncryptionCipher = Cipher.getInstance(transformation);
+            c2sEncryptionCipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
             c2sEncryptionCipher.init(Cipher.ENCRYPT_MODE, proxyServerSecretKey, new IvParameterSpec(proxyServerSecretKey.getEncoded()));
 
-            c2sDecryptionCipher = Cipher.getInstance(transformation);
+            c2sDecryptionCipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
             c2sDecryptionCipher.init(Cipher.DECRYPT_MODE, clientSecretKey, new IvParameterSpec(clientSecretKey.getEncoded()));
 
-            s2cEncryptionCipher = Cipher.getInstance(transformation);
+            s2cEncryptionCipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
             s2cEncryptionCipher.init(Cipher.ENCRYPT_MODE, clientSecretKey, new IvParameterSpec(clientSecretKey.getEncoded()));
 
-            s2cDecryptionCipher = Cipher.getInstance(transformation);
+            s2cDecryptionCipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
             s2cDecryptionCipher.init(Cipher.DECRYPT_MODE, proxyServerSecretKey, new IvParameterSpec(proxyServerSecretKey.getEncoded()));
         } catch (GeneralSecurityException exception) {
             throw new RuntimeException(exception);
@@ -70,6 +68,8 @@ public final class EncryptionEnabledContext implements EncryptionContext {
     public boolean isEnabled() {
         return true;
     }
+
+    private static final String CIPHER_TRANSFORMATION = "AES/CFB8/NoPadding";
 
     private static ByteBuf operate(@NotNull ByteBuf in, @NotNull Cipher cipher) {
         var size = cipher.getOutputSize(in.readableBytes());

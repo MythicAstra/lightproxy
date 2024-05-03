@@ -16,6 +16,8 @@
 
 package net.sharedwonder.mc.ptbridge.packet;
 
+import java.util.HashMap;
+import java.util.Map;
 import net.sharedwonder.mc.ptbridge.handlers.CHHandshake;
 import net.sharedwonder.mc.ptbridge.handlers.CLEncryptionResponse;
 import net.sharedwonder.mc.ptbridge.handlers.CLRequestLogin;
@@ -24,8 +26,6 @@ import net.sharedwonder.mc.ptbridge.handlers.SLLoginSuccess;
 import net.sharedwonder.mc.ptbridge.handlers.SLRequestEncryption;
 import net.sharedwonder.mc.ptbridge.handlers.SPV47SetCompressionLevel;
 import net.sharedwonder.mc.ptbridge.utils.Constants;
-import java.util.HashMap;
-import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -16,17 +16,17 @@
 
 package net.sharedwonder.mc.ptbridge;
 
-import net.sharedwonder.mc.ptbridge.crypt.EncryptionContext;
-import net.sharedwonder.mc.ptbridge.packet.HandledFlag;
-import net.sharedwonder.mc.ptbridge.packet.PacketCompressionUtils;
-import net.sharedwonder.mc.ptbridge.packet.PacketType;
-import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import net.sharedwonder.mc.ptbridge.crypt.EncryptionContext;
+import net.sharedwonder.mc.ptbridge.packet.HandledFlag;
+import net.sharedwonder.mc.ptbridge.packet.PacketCompressionUtils;
+import net.sharedwonder.mc.ptbridge.packet.PacketType;
+import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
 import org.jetbrains.annotations.NotNull;
 
 public abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAdapter permits ProxyBackendHandler, ProxyServerHandler {
@@ -159,13 +159,13 @@ public abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAd
     private void handle(@NotNull ByteBufAllocator allocator, int packetSize, @NotNull ByteBuf in, @NotNull ByteBuf out) {
         var before = in.readerIndex();
         var id = PacketUtils.readVarint(in);
-        var idWidth = in.readerIndex() - before;
+        var idLength = in.readerIndex() - before;
         var handler = packetType.getPacketHandler(connectionContext.getConnectionState(), id);
 
         if (handler == null) {
             PacketUtils.writeVarint(out, packetSize);
             PacketUtils.writeVarint(out, id);
-            out.writeBytes(in, packetSize - idWidth);
+            out.writeBytes(in, packetSize - idLength);
             return;
         }
 
@@ -177,9 +177,9 @@ public abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAd
             in.readerIndex(start);
             PacketUtils.writeVarint(out, packetSize);
             PacketUtils.writeVarint(out, id);
-            out.writeBytes(in, in.readerIndex(), packetSize - idWidth);
+            out.writeBytes(in, in.readerIndex(), packetSize - idLength);
         } else if (flag == HandledFlag.TRANSFORMED) {
-            var size = idWidth + transformed.readableBytes();
+            var size = idLength + transformed.readableBytes();
             PacketUtils.writeVarint(out, size);
             PacketUtils.writeVarint(out, id);
             out.writeBytes(transformed);

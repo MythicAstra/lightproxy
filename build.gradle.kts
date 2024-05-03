@@ -8,7 +8,7 @@ val GITHUB_REPO_URL = "https://github.com/sharedwonder/ptbridge"
 val S5W5_GPR_URL = "https://maven.pkg.github.com/sharedwonder/maven-repository"
 
 group = "net.sharedwonder.mc"
-version = "0.1.0"
+version = property("version").toString()
 
 repositories {
     mavenLocal()
@@ -17,20 +17,18 @@ repositories {
 }
 
 dependencies {
-    implementation(platform("io.netty:netty-bom:4.1.101.Final"))
-    implementation(platform("org.apache.logging.log4j:log4j-bom:2.22.1"))
     implementation("com.beust:jcommander:1.82")
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation(platform("io.netty:netty-bom:4.1.109.Final"))
     implementation("io.netty:netty-buffer")
     implementation("io.netty:netty-codec")
     implementation("io.netty:netty-common")
+    implementation(platform("org.apache.logging.log4j:log4j-bom:2.23.1"))
     implementation("org.apache.logging.log4j:log4j-api")
-    compileOnly("org.jetbrains:annotations:24.0.1")
+    compileOnly("org.jetbrains:annotations:24.1.0")
     runtimeOnly("org.apache.logging.log4j:log4j-core")
 
-    testImplementation(platform("org.junit:junit-bom:5.9.3"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
 }
 
 java {

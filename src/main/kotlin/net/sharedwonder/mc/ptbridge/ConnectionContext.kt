@@ -16,18 +16,19 @@
 
 package net.sharedwonder.mc.ptbridge
 
-import net.sharedwonder.mc.ptbridge.addon.ExternalContext
-import net.sharedwonder.mc.ptbridge.crypt.EncryptionContext
-import net.sharedwonder.mc.ptbridge.utils.ConnectionState
-import net.sharedwonder.mc.ptbridge.utils.PlayerProfile
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
+import kotlin.concurrent.thread
 import java.util.Queue
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.function.Function
 import java.util.function.Supplier
 import io.netty.buffer.ByteBuf
+import net.sharedwonder.mc.ptbridge.addon.ExternalContext
+import net.sharedwonder.mc.ptbridge.crypt.EncryptionContext
+import net.sharedwonder.mc.ptbridge.utils.ConnectionState
+import net.sharedwonder.mc.ptbridge.utils.PlayerProfile
 import org.apache.logging.log4j.LogManager
 
 class ConnectionContext internal constructor(proxyServer: ProxyServer) {
@@ -90,13 +91,13 @@ class ConnectionContext internal constructor(proxyServer: ProxyServer) {
     internal fun onConnect() {
         val threads = ArrayList<Thread>(externalContexts.size)
         for (externalContext in externalContexts.values) {
-            threads.add(Thread {
+            threads.add(thread {
                 try {
                     externalContext.onConnect()
                 } catch (exception: Throwable) {
                     LOGGER.error("An error occurred while calling onConnect on ${externalContext.javaClass.typeName}", exception)
                 }
-            }.apply { start() })
+            })
         }
         threads.forEach { it.join() }
     }
@@ -105,13 +106,13 @@ class ConnectionContext internal constructor(proxyServer: ProxyServer) {
     internal fun onDisconnect() {
         val threads = ArrayList<Thread>(externalContexts.size)
         for (externalContext in externalContexts.values) {
-            threads.add(Thread {
+            threads.add(thread {
                 try {
                     externalContext.onDisconnect()
                 } catch (exception: Throwable) {
                     LOGGER.error("An error occurred while calling onDisconnect on ${externalContext.javaClass.typeName}", exception)
                 }
-            }.apply { start() })
+            })
         }
         threads.forEach { it.join() }
     }

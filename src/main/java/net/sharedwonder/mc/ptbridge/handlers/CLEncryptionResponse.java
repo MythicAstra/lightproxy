@@ -16,6 +16,8 @@
 
 package net.sharedwonder.mc.ptbridge.handlers;
 
+import java.util.Arrays;
+import io.netty.buffer.ByteBuf;
 import net.sharedwonder.mc.ptbridge.ConnectionContext;
 import net.sharedwonder.mc.ptbridge.crypt.CryptUtils;
 import net.sharedwonder.mc.ptbridge.crypt.EncryptionContext;
@@ -24,8 +26,6 @@ import net.sharedwonder.mc.ptbridge.packet.C2SPacketHandler;
 import net.sharedwonder.mc.ptbridge.packet.HandledFlag;
 import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
 import net.sharedwonder.mc.ptbridge.utils.Constants;
-import java.util.Arrays;
-import io.netty.buffer.ByteBuf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -72,7 +72,7 @@ public class CLEncryptionResponse implements C2SPacketHandler {
         PacketUtils.writeByteArray(transformed, CryptUtils.encryptData(handshakingContext.originServerPublicKey, proxyServerSecretKey.getEncoded()));
         PacketUtils.writeByteArray(transformed, CryptUtils.encryptData(handshakingContext.originServerPublicKey, handshakingContext.verifyToken));
 
-        LOGGER.info("Client authenticated, username: " + connectionContext.getPlayerUsername());
+        LOGGER.info("Client authenticated, username: {}", connectionContext.getPlayerUsername());
 
         return HandledFlag.TRANSFORMED;
     }

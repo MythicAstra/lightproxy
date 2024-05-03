@@ -16,7 +16,6 @@
 
 package net.sharedwonder.mc.ptbridge;
 
-import net.sharedwonder.mc.ptbridge.packet.PacketType;
 import java.net.InetSocketAddress;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -26,6 +25,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
+import net.sharedwonder.mc.ptbridge.packet.PacketType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +59,7 @@ public final class ProxyServerHandler extends ProxyChannelHandler {
             if (listener.isSuccess()) {
                 channel.config().setAutoRead(true);
             } else {
-                LOGGER.error("Failed to connect to the remote host: " + socketAddress);
+                LOGGER.error("Failed to connect to the remote host: {}", socketAddress);
                 if (channel.isActive()) {
                     channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
                 }

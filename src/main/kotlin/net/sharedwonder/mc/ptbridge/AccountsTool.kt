@@ -16,11 +16,11 @@
 
 package net.sharedwonder.mc.ptbridge
 
+import java.io.File
+import java.util.regex.Pattern
 import net.sharedwonder.mc.ptbridge.mcauth.msa.MCAuthWithMSA
 import net.sharedwonder.mc.ptbridge.mcauth.msa.MSAAuthTokenType
 import net.sharedwonder.mc.ptbridge.utils.AccountsFileUtils
-import java.io.File
-import java.util.regex.Pattern
 
 private const val MSA_LOGIN_URL = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code" +
     "&scope=service::user.auth.xboxlive.com::MBI_SSL&redirect_uri=https://login.live.com/oauth20_desktop.srf"

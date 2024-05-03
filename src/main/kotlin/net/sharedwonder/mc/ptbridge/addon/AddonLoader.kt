@@ -16,10 +16,10 @@
 
 package net.sharedwonder.mc.ptbridge.addon
 
-import net.sharedwonder.mc.ptbridge.utils.GSON
 import java.io.File
 import java.net.URLClassLoader
 import java.util.jar.JarFile
+import net.sharedwonder.mc.ptbridge.utils.GSON
 import org.apache.logging.log4j.LogManager
 
 object AddonLoader {

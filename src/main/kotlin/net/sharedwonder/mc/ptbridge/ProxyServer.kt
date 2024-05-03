@@ -16,11 +16,6 @@
 
 package net.sharedwonder.mc.ptbridge
 
-import net.sharedwonder.mc.ptbridge.addon.AddonLoader
-import net.sharedwonder.mc.ptbridge.config.ConfigManager
-import net.sharedwonder.mc.ptbridge.packet.PacketHandlers
-import net.sharedwonder.mc.ptbridge.utils.AccountsFileUtils
-import net.sharedwonder.mc.ptbridge.utils.PlayerProfile
 import java.io.File
 import java.util.Hashtable
 import javax.naming.NamingException
@@ -33,6 +28,11 @@ import io.netty.channel.EventLoopGroup
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
+import net.sharedwonder.mc.ptbridge.addon.AddonLoader
+import net.sharedwonder.mc.ptbridge.config.ConfigManager
+import net.sharedwonder.mc.ptbridge.packet.PacketHandlers
+import net.sharedwonder.mc.ptbridge.utils.AccountsFileUtils
+import net.sharedwonder.mc.ptbridge.utils.PlayerProfile
 import org.apache.logging.log4j.LogManager
 
 class ProxyServer(val bindPort: Int, host: String, port: Int, accountsFile: File, private val addonsDir: File, private val configDir: File) {

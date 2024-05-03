@@ -16,10 +16,10 @@
 
 package net.sharedwonder.mc.ptbridge.crypt;
 
-import net.sharedwonder.mc.ptbridge.packet.PacketType;
 import java.security.PublicKey;
 import javax.crypto.SecretKey;
 import io.netty.buffer.ByteBuf;
+import net.sharedwonder.mc.ptbridge.packet.PacketType;
 import org.jetbrains.annotations.NotNull;
 
 public sealed interface EncryptionContext permits EncryptionEnabledContext, EncryptionDisabledContext, EncryptionHandshakingContext {
