@@ -17,11 +17,11 @@
 package net.sharedwonder.mc.ptbridge.mcauth.msa
 
 import java.net.URI
+import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import net.sharedwonder.mc.ptbridge.http.HTTPRequestUtils
 import net.sharedwonder.mc.ptbridge.mcauth.MCAuth
-import net.sharedwonder.mc.ptbridge.utils.GSON
-import net.sharedwonder.mc.ptbridge.utils.HTTPRequestUtils
 import net.sharedwonder.mc.ptbridge.utils.PlayerProfile
 import net.sharedwonder.mc.ptbridge.utils.UUIDUtils
 
@@ -68,6 +68,8 @@ private val XSTS_AUTH_URL = URI("https://xsts.auth.xboxlive.com/xsts/authorize")
 private val MC_AUTH_URL = URI("https://api.minecraftservices.com/authentication/login_with_xbox").toURL()
 
 private val MC_QUERY_PROFILE_URL = URI("https://api.minecraftservices.com/minecraft/profile").toURL()
+
+private val GSON = Gson()
 
 private fun msaAuthStep(tokenType: MSAAuthTokenType, authToken: String): MSAAuthResponse {
     val body = mapOf(

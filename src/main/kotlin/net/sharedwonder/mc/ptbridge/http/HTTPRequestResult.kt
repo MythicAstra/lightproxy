@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.sharedwonder.mc.ptbridge.utils
+package net.sharedwonder.mc.ptbridge.http
 
 sealed class HTTPRequestResult {
     val response: Response

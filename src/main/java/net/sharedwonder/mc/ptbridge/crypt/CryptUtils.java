@@ -28,12 +28,11 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import org.jetbrains.annotations.NotNull;
 
 public final class CryptUtils {
     private CryptUtils() {}
 
-    public static @NotNull SecretKey generateSecretKey() {
+    public static SecretKey generateSecretKey() {
         try {
             var generator = KeyGenerator.getInstance("AES");
             generator.init(128);
@@ -43,7 +42,7 @@ public final class CryptUtils {
         }
     }
 
-    public static @NotNull KeyPair generateKeyPair() {
+    public static KeyPair generateKeyPair() {
         try {
             var generator = KeyPairGenerator.getInstance("RSA");
             generator.initialize(1024);
@@ -53,7 +52,7 @@ public final class CryptUtils {
         }
     }
 
-    public static @NotNull PublicKey decodePublicKey(byte @NotNull [] encoded) {
+    public static PublicKey decodePublicKey(byte[] encoded) {
         try {
             var encodedKeySpec = new X509EncodedKeySpec(encoded);
             var keyfactory = KeyFactory.getInstance("RSA");
@@ -63,11 +62,11 @@ public final class CryptUtils {
         }
     }
 
-    public static @NotNull SecretKey decodeSecretKey(byte @NotNull [] encoded) {
+    public static SecretKey decodeSecretKey(byte[] encoded) {
         return new SecretKeySpec(encoded, "AES");
     }
 
-    public static byte @NotNull [] encryptData(@NotNull Key key, byte @NotNull [] data) {
+    public static byte[] encryptData(Key key, byte[] data) {
         try {
             var cipher = Cipher.getInstance(key.getAlgorithm());
             cipher.init(Cipher.ENCRYPT_MODE, key);
@@ -77,7 +76,7 @@ public final class CryptUtils {
         }
     }
 
-    public static byte @NotNull [] decryptData(@NotNull Key key, byte @NotNull [] data) {
+    public static byte[] decryptData(Key key, byte[] data) {
         try {
             var cipher = Cipher.getInstance(key.getAlgorithm());
             cipher.init(Cipher.DECRYPT_MODE, key);
@@ -87,7 +86,7 @@ public final class CryptUtils {
         }
     }
 
-    public static byte @NotNull [] calcServerId(@NotNull String baseServerId, @NotNull SecretKey secretKey, @NotNull PublicKey publicKey) {
+    public static byte[] calcServerId(String baseServerId, SecretKey secretKey, PublicKey publicKey) {
         try {
             var messageDigest = MessageDigest.getInstance("SHA-1");
             messageDigest.update(baseServerId.getBytes(StandardCharsets.ISO_8859_1));

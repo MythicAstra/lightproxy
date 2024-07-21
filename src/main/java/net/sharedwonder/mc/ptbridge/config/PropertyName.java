@@ -13,24 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sharedwonder.mc.ptbridge.config
 
-import java.io.File
+package net.sharedwonder.mc.ptbridge.config;
 
-class ConfigManager private constructor(private val configDir: File) {
-    fun getConfigFile(name: String): File = File(configDir, name)
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    companion object {
-        @JvmStatic
-        private var instance: ConfigManager? = null
-
-        @JvmStatic
-        fun getInstance(): ConfigManager = instance!!
-
-        @JvmStatic
-        @PublishedApi
-        internal fun createInstance(configDir: File) {
-            instance = ConfigManager(configDir)
-        }
-    }
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface PropertyName {
+    String value();
 }

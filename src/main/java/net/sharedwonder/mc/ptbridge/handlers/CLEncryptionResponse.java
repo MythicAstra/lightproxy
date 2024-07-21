@@ -19,16 +19,15 @@ package net.sharedwonder.mc.ptbridge.handlers;
 import java.util.Arrays;
 import io.netty.buffer.ByteBuf;
 import net.sharedwonder.mc.ptbridge.ConnectionContext;
+import net.sharedwonder.mc.ptbridge.Constants;
 import net.sharedwonder.mc.ptbridge.crypt.CryptUtils;
 import net.sharedwonder.mc.ptbridge.crypt.EncryptionContext;
 import net.sharedwonder.mc.ptbridge.crypt.EncryptionHandshakingContext;
 import net.sharedwonder.mc.ptbridge.packet.C2SPacketHandler;
 import net.sharedwonder.mc.ptbridge.packet.HandledFlag;
 import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
-import net.sharedwonder.mc.ptbridge.utils.Constants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 public class CLEncryptionResponse implements C2SPacketHandler {
     @Override
@@ -37,14 +36,13 @@ public class CLEncryptionResponse implements C2SPacketHandler {
     }
 
     @Override
-    public @NotNull HandledFlag handle(@NotNull ConnectionContext connectionContext, @NotNull ByteBuf in, @NotNull ByteBuf transformed) {
-        if (!(connectionContext.getEncryptionContext() instanceof EncryptionHandshakingContext handshakingContext)) {
+    public HandledFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
+        if (!(context.getEncryptionContext() instanceof EncryptionHandshakingContext handshakingContext)) {
             throw new IllegalStateException("Encryption context is not handshaking context");
         }
 
-        var username = connectionContext.getPlayerUsername();
-        var accounts = connectionContext.minecraftAccounts;
-        if (accounts == null) {
+        var username = context.getPlayerUsername();
+        if (context.accounts == null || context.accounts.isEmpty()) {
             throw new RuntimeException("Unable to enable encryption because no Minecraft accounts were configured: " + username);
         }
 
@@ -52,10 +50,10 @@ public class CLEncryptionResponse implements C2SPacketHandler {
         var clientSecretKey = CryptUtils.decodeSecretKey(CryptUtils.decryptData(handshakingContext.proxyServerPrivateKey, PacketUtils.readByteArray(in)));
         var verifyToken = CryptUtils.decryptData(handshakingContext.proxyServerPrivateKey, PacketUtils.readByteArray(in));
 
-        var profile = accounts.get(username);
+        var profile = context.accounts.get(username);
         if (profile != null) {
             if (!profile.hasJoinedServer(CryptUtils.calcServerId(handshakingContext.baseServerId, clientSecretKey, handshakingContext.proxyServerPublicKey),
-                connectionContext.getClientAddress())) {
+                context.getClientAddress())) {
                 throw new RuntimeException("Unable to authenticate the client (hasJoinedServer check): " + username);
             }
             if (!Arrays.equals(verifyToken, handshakingContext.verifyToken)) {
@@ -67,12 +65,12 @@ public class CLEncryptionResponse implements C2SPacketHandler {
             throw new RuntimeException("Unable to enable encryption because the Minecraft account profile of the username was not found: " + username);
         }
 
-        connectionContext.setEncryptionContext(EncryptionContext.enabled(clientSecretKey, proxyServerSecretKey));
+        context.setEncryptionContext(EncryptionContext.enabled(clientSecretKey, proxyServerSecretKey));
 
         PacketUtils.writeByteArray(transformed, CryptUtils.encryptData(handshakingContext.originServerPublicKey, proxyServerSecretKey.getEncoded()));
         PacketUtils.writeByteArray(transformed, CryptUtils.encryptData(handshakingContext.originServerPublicKey, handshakingContext.verifyToken));
 
-        LOGGER.info("Client authenticated, username: {}", connectionContext.getPlayerUsername());
+        LOGGER.info("Client authenticated, username: " + context.getPlayerUsername());
 
         return HandledFlag.TRANSFORMED;
     }

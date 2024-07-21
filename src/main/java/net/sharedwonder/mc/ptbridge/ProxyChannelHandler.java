@@ -27,26 +27,25 @@ import net.sharedwonder.mc.ptbridge.packet.HandledFlag;
 import net.sharedwonder.mc.ptbridge.packet.PacketCompressionUtils;
 import net.sharedwonder.mc.ptbridge.packet.PacketType;
 import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
-import org.jetbrains.annotations.NotNull;
 
-public abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAdapter permits ProxyBackendHandler, ProxyServerHandler {
-    protected final @NotNull ConnectionContext connectionContext;
+abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAdapter permits ProxyBackendHandler, ProxyServerHandler {
+    final ConnectionContext connectionContext;
 
-    private final @NotNull PacketType packetType;
+    private final PacketType packetType;
 
     private ByteBuf buffer;
 
     private int remainingUnreadSize = 0;
 
-    protected ProxyChannelHandler(@NotNull ConnectionContext connectionContext, @NotNull PacketType packetType) {
+    ProxyChannelHandler(ConnectionContext connectionContext, PacketType packetType) {
         this.connectionContext = connectionContext;
         this.packetType = packetType;
     }
 
-    protected abstract @NotNull ChannelFuture sendMessage(@NotNull ByteBuf message);
+    abstract ChannelFuture sendMessage(ByteBuf message);
 
     @Override
-    public void channelRead(@NotNull ChannelHandlerContext context, @NotNull Object message) {
+    public void channelRead(ChannelHandlerContext context, Object message) throws Exception {
         var in = (ByteBuf) message;
         try {
             if (!in.isReadable()) {
@@ -66,11 +65,11 @@ public abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAd
                     return;
                 }
             } else {
-                buffer = allocator.buffer();
+                buffer = allocator.ioBuffer();
                 buffer.writeBytes(messageBuf);
             }
 
-            var out = allocator.buffer();
+            var out = allocator.ioBuffer();
             do {
                 var startIndex = buffer.readerIndex();
                 int size;
@@ -83,6 +82,7 @@ public abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAd
                     send(encryptionContext, out);
                     return;
                 }
+
                 var endIndex = buffer.readerIndex() + size;
                 var available = buffer.readableBytes();
                 if (size > available) {
@@ -95,12 +95,12 @@ public abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAd
 
                 if (connectionContext.getCompressionThreshold() >= 0) {
                     if (packetType == PacketType.S2C) {
-                        var buf = allocator.buffer();
+                        var buf = allocator.heapBuffer();
                         var decompressedSize = PacketCompressionUtils.decompress(size, buffer, buf);
                         handle(allocator, decompressedSize, buf, out);
                         buf.release();
                     } else {
-                        var packet = allocator.buffer();
+                        var packet = allocator.heapBuffer();
                         handle(allocator, size, buffer, packet);
                         if (packet.isReadable()) {
                             PacketCompressionUtils.compress(connectionContext.getCompressionThreshold(), PacketUtils.readVarint(packet), packet, out);
@@ -115,12 +115,12 @@ public abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAd
             } while (buffer.isReadable());
 
             if (packetType == PacketType.S2C) {
-                while (!connectionContext.toClientPacketQueue.isEmpty()) {
-                    out.writeBytes(connectionContext.toClientPacketQueue.poll());
+                while (!connectionContext.attachedS2CPackets.isEmpty()) {
+                    out.writeBytes(connectionContext.attachedS2CPackets.poll());
                 }
             } else {
-                while (!connectionContext.toServerPacketQueue.isEmpty()) {
-                    var packet = connectionContext.toServerPacketQueue.poll();
+                while (!connectionContext.attachedC2SPackets.isEmpty()) {
+                    var packet = connectionContext.attachedC2SPackets.poll();
                     PacketCompressionUtils.compress(connectionContext.getCompressionThreshold(), PacketUtils.readVarint(packet), packet, out);
                     packet.release();
                 }
@@ -134,14 +134,14 @@ public abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAd
     }
 
     @Override
-    public void channelInactive(@NotNull ChannelHandlerContext context) {
+    public void channelInactive(ChannelHandlerContext context) {
         if (buffer != null && buffer.refCnt() > 0) {
             remainingUnreadSize = 0;
             buffer.release();
         }
     }
 
-    private void send(@NotNull EncryptionContext encryptionContext, @NotNull ByteBuf message) {
+    private void send(EncryptionContext encryptionContext, ByteBuf message) {
         ByteBuf out;
         if (encryptionContext.isEnabled()) {
             out = encryptionContext.encrypt(packetType, message);
@@ -156,11 +156,11 @@ public abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAd
         });
     }
 
-    private void handle(@NotNull ByteBufAllocator allocator, int packetSize, @NotNull ByteBuf in, @NotNull ByteBuf out) {
+    private void handle(ByteBufAllocator allocator, int packetSize, ByteBuf in, ByteBuf out) throws Exception {
         var before = in.readerIndex();
         var id = PacketUtils.readVarint(in);
         var idLength = in.readerIndex() - before;
-        var handler = packetType.getPacketHandler(connectionContext.getConnectionState(), id);
+        var handler = packetType.getPacketHandler(connectionContext.getState(), id);
 
         if (handler == null) {
             PacketUtils.writeVarint(out, packetSize);
@@ -170,7 +170,7 @@ public abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAd
         }
 
         var start = in.readerIndex();
-        var transformed = allocator.buffer();
+        var transformed = allocator.heapBuffer();
         var flag = handler.handle(connectionContext, in, transformed);
 
         if (flag == HandledFlag.PASSED) {

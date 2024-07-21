@@ -18,13 +18,12 @@ package net.sharedwonder.mc.ptbridge.handlers;
 
 import io.netty.buffer.ByteBuf;
 import net.sharedwonder.mc.ptbridge.ConnectionContext;
+import net.sharedwonder.mc.ptbridge.Constants;
 import net.sharedwonder.mc.ptbridge.packet.C2SPacketHandler;
 import net.sharedwonder.mc.ptbridge.packet.HandledFlag;
 import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
-import net.sharedwonder.mc.ptbridge.utils.Constants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 public class CLRequestLogin implements C2SPacketHandler {
     @Override
@@ -33,9 +32,9 @@ public class CLRequestLogin implements C2SPacketHandler {
     }
 
     @Override
-    public @NotNull HandledFlag handle(@NotNull ConnectionContext connectionContext, @NotNull ByteBuf in, @NotNull ByteBuf transformed) {
-        connectionContext.setPlayerUsername(PacketUtils.readUtf8String(in));
-        LOGGER.info("Client requested to login, username: " + connectionContext.getPlayerUsername());
+    public HandledFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
+        context.setPlayerUsername(PacketUtils.readUtf8String(in));
+        LOGGER.info("Client requested to login, username: " + context.getPlayerUsername());
         return HandledFlag.PASSED;
     }
 

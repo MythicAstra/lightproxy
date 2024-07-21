@@ -20,14 +20,13 @@ import java.security.PublicKey;
 import javax.crypto.SecretKey;
 import io.netty.buffer.ByteBuf;
 import net.sharedwonder.mc.ptbridge.packet.PacketType;
-import org.jetbrains.annotations.NotNull;
 
 public sealed interface EncryptionContext permits EncryptionEnabledContext, EncryptionDisabledContext, EncryptionHandshakingContext {
-    default @NotNull ByteBuf encrypt(@NotNull PacketType type, @NotNull ByteBuf in) {
+    default ByteBuf encrypt(PacketType type, ByteBuf in) {
         throw new UnsupportedOperationException();
     }
 
-    default @NotNull ByteBuf decrypt(@NotNull PacketType type, @NotNull ByteBuf in) {
+    default ByteBuf decrypt(PacketType type, ByteBuf in) {
         throw new UnsupportedOperationException();
     }
 
@@ -35,15 +34,15 @@ public sealed interface EncryptionContext permits EncryptionEnabledContext, Encr
         return false;
     }
 
-    static @NotNull EncryptionDisabledContext disabled() {
+    static EncryptionDisabledContext disabled() {
         return new EncryptionDisabledContext();
     }
 
-    static @NotNull EncryptionHandshakingContext handshaking(@NotNull String baseServerId, @NotNull PublicKey originServerPublicKey, byte @NotNull [] verifyToken) {
+    static EncryptionHandshakingContext handshaking(String baseServerId, PublicKey originServerPublicKey, byte[] verifyToken) {
         return new EncryptionHandshakingContext(baseServerId, originServerPublicKey, verifyToken);
     }
 
-    static @NotNull EncryptionEnabledContext enabled(@NotNull SecretKey clientSecretKey, @NotNull SecretKey proxyServerSecretKey) {
+    static EncryptionEnabledContext enabled(SecretKey clientSecretKey, SecretKey proxyServerSecretKey) {
         return new EncryptionEnabledContext(clientSecretKey, proxyServerSecretKey);
     }
 }

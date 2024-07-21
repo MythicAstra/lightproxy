@@ -26,19 +26,18 @@ import io.netty.channel.ChannelHandlerContext;
 import net.sharedwonder.mc.ptbridge.packet.PacketType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 @ChannelHandler.Sharable
-public final class ProxyBackendHandler extends ProxyChannelHandler {
-    private final @NotNull Channel clientBoundChannel;
+final class ProxyBackendHandler extends ProxyChannelHandler {
+    private final Channel clientBoundChannel;
 
-    public ProxyBackendHandler(@NotNull ConnectionContext connectionContext, @NotNull Channel clientBoundChannel) {
+    ProxyBackendHandler(ConnectionContext connectionContext, Channel clientBoundChannel) {
         super(connectionContext, PacketType.S2C);
         this.clientBoundChannel = clientBoundChannel;
     }
 
     @Override
-    public void channelInactive(@NotNull ChannelHandlerContext context) {
+    public void channelInactive(ChannelHandlerContext context) {
         super.channelInactive(context);
         if (clientBoundChannel.isActive()) {
             clientBoundChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
@@ -46,13 +45,13 @@ public final class ProxyBackendHandler extends ProxyChannelHandler {
     }
 
     @Override
-    public void exceptionCaught(@NotNull ChannelHandlerContext context, @NotNull Throwable exception) {
+    public void exceptionCaught(ChannelHandlerContext context, Throwable exception) {
         LOGGER.error("Caught an exception in the proxy backend handler", exception);
         context.close();
     }
 
     @Override
-    protected @NotNull ChannelFuture sendMessage(@NotNull ByteBuf message) {
+    ChannelFuture sendMessage(ByteBuf message) {
         return clientBoundChannel.writeAndFlush(message);
     }
 

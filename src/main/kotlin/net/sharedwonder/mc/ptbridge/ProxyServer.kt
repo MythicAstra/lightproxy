@@ -18,51 +18,51 @@ package net.sharedwonder.mc.ptbridge
 
 import java.io.File
 import java.util.Hashtable
-import javax.naming.NamingException
 import javax.naming.directory.DirContext
 import javax.naming.directory.InitialDirContext
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
-import io.netty.channel.EventLoopGroup
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import net.sharedwonder.mc.ptbridge.addon.AddonLoader
 import net.sharedwonder.mc.ptbridge.config.ConfigManager
-import net.sharedwonder.mc.ptbridge.packet.PacketHandlers
-import net.sharedwonder.mc.ptbridge.utils.AccountsFileUtils
 import net.sharedwonder.mc.ptbridge.utils.PlayerProfile
 import org.apache.logging.log4j.LogManager
 
-class ProxyServer(val bindPort: Int, host: String, port: Int, accountsFile: File, private val addonsDir: File, private val configDir: File) {
+class ProxyServer(val bindPort: Int, host: String, port: Int, accountsFile: File, addonsDir: File, configDir: File) {
     val remoteAddress: String
 
     val remotePort: Int
 
-    val minecraftAccounts: MutableMap<String, PlayerProfile>?
+    val accounts: MutableMap<String, PlayerProfile>?
 
     init {
         try {
             LOGGER.info("Initializing...")
 
-            ConfigManager.createInstance(configDir)
-            PacketHandlers.registerDefaultHandlers()
+            ConfigManager.init(configDir)
             AddonLoader.init(addonsDir)
 
-            var minecraftAccounts: MutableMap<String, PlayerProfile>? = null
-            try {
-                if (accountsFile.isFile) {
-                    minecraftAccounts = AccountsFileUtils.readFile(accountsFile)
-                    if (refreshTokensIfExpired(minecraftAccounts)) {
-                        AccountsFileUtils.writeFile(accountsFile, minecraftAccounts)
+            var accounts: MutableMap<String, PlayerProfile>? = null
+            if (accountsFile.isFile) {
+                try {
+                    accounts = readAccountsFile(accountsFile)
+                } catch (exception: Exception) {
+                    LOGGER.error("An error occurred while reading the accounts file: $exception")
+                }
+                if (accounts != null) {
+                    if (refreshTokensIfExpired(accounts)) {
+                        try {
+                            writeAccountsFile(accountsFile, accounts)
+                        } catch (exception: Exception) {
+                            LOGGER.error("An error occurred while writing the accounts file: $exception")
+                        }
                     }
                 }
-            } catch (exception: Exception) {
-                LOGGER.error("An error occurred while processing Minecraft accounts data: $exception")
             }
-
-            this.minecraftAccounts = minecraftAccounts
+            this.accounts = accounts
 
             val lookupResult =
                 if (port == 25565) {
@@ -87,8 +87,8 @@ class ProxyServer(val bindPort: Int, host: String, port: Int, accountsFile: File
     fun run(): Int {
         LOGGER.info("Starting Minecraft proxy server...")
 
-        val bossGroup: EventLoopGroup = NioEventLoopGroup()
-        val workerGroup: EventLoopGroup = NioEventLoopGroup()
+        val bossGroup = NioEventLoopGroup()
+        val workerGroup = NioEventLoopGroup()
 
         try {
             val serverBootstrap = ServerBootstrap()
@@ -128,7 +128,6 @@ class ProxyServer(val bindPort: Int, host: String, port: Int, accountsFile: File
             return server.run()
         }
 
-        @Throws(NamingException::class)
         private fun lookupServer(hostname: String): Pair<String, Int> {
             val environment = Hashtable<String, String>()
             environment[DirContext.INITIAL_CONTEXT_FACTORY] = "com.sun.jndi.dns.DnsContextFactory"
@@ -144,7 +143,6 @@ class ProxyServer(val bindPort: Int, host: String, port: Int, accountsFile: File
             return content[3] to content[2].toInt()
         }
 
-        @JvmStatic
         private fun refreshTokensIfExpired(accounts: MutableMap<String, PlayerProfile>): Boolean {
             var isModified = false
             for (entry in accounts) {

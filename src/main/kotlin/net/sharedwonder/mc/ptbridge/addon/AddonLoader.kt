@@ -19,7 +19,7 @@ package net.sharedwonder.mc.ptbridge.addon
 import java.io.File
 import java.net.URLClassLoader
 import java.util.jar.JarFile
-import net.sharedwonder.mc.ptbridge.utils.GSON
+import com.google.gson.Gson
 import org.apache.logging.log4j.LogManager
 
 object AddonLoader {
@@ -27,11 +27,13 @@ object AddonLoader {
 
     private val LOGGER = LogManager.getLogger(AddonLoader::class.java)
 
-    private val ADDONS = HashMap<String, AddonInfo>()
+    private val GSON = Gson()
+
+    private val addons = HashMap<String, AddonInfo>()
 
     @JvmStatic
     fun getAddonInfo(id: String): AddonInfo {
-        val info = ADDONS[id]
+        val info = addons[id]
         checkNotNull(info) { "The addon of $id is not loaded" }
         return info
     }
@@ -91,11 +93,11 @@ object AddonLoader {
         }
 
         try {
-            ADDONS[info.id] = info
+            addons[info.id] = info
             initializer.init()
         } catch (exception: Throwable) {
             LOGGER.error("Exception thrown while initializing the addon: ${file.name}", exception)
-            ADDONS.remove(info.id)
+            addons.remove(info.id)
             return false
         }
 

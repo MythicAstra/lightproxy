@@ -50,8 +50,8 @@ private object MainArguments {
     @Parameter(names = ["-c", "--config-dir"], description = "Specifies the configuration directory")
     var configDir: String = "config"
 
-    @Parameter(names = ["-i", "--login"], description = "Prompts to add a Minecraft account to the accounts file, requires an account type")
-    var login: String? = null
+    @Parameter(names = ["-i", "--login"], description = "Adds a Minecraft account to the accounts file")
+    var login: Boolean = false
 
     @Parameter(names = ["-o", "--logout"], description = "Remove a Minecraft account from the accounts file, requires a username")
     var logout: String? = null
@@ -75,19 +75,11 @@ fun main(args: Array<String>) {
         when {
             help -> showHelp(commander)
             version -> showVersion()
-            else -> {
-                remoteAddress?.let {
-                    ProxyServer.start(bindPort, it, remotePort, File(accountsFile), File(addonsDir), File(configDir))
-                } ?: login?.let {
-                    addMinecraftAccount(File(accountsFile), it)
-                } ?: logout?.let {
-                    removeMinecraftAccount(File(accountsFile), it)
-                } ?: if (listAccounts) {
-                    listMinecraftAccounts(File(accountsFile))
-                } else {
-                    showHelp(commander)
-                }
-            }
+            login -> addMinecraftAccount(File(accountsFile))
+            logout != null -> removeMinecraftAccount(File(accountsFile), logout!!)
+            listAccounts -> listMinecraftAccounts(File(accountsFile))
+            remoteAddress != null -> ProxyServer.start(bindPort, remoteAddress!!, remotePort, File(accountsFile), File(addonsDir), File(configDir))
+            else -> showHelp(commander)
         }
     })
 }

@@ -21,7 +21,6 @@ import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import org.jetbrains.annotations.NotNull;
 
 public final class PacketCompressionUtils {
     private PacketCompressionUtils() {}
@@ -30,7 +29,7 @@ public final class PacketCompressionUtils {
 
     private static final Inflater INFLATER = new Inflater();
 
-    public static void compress(int compressionThreshold, int size, @NotNull ByteBuf in, @NotNull ByteBuf out) {
+    public static void compress(int compressionThreshold, int size, ByteBuf in, ByteBuf out) {
         if (size >= compressionThreshold) {
             var buf = Unpooled.buffer();
             var bytes = PacketUtils.readBytes(in, size);
@@ -55,7 +54,7 @@ public final class PacketCompressionUtils {
         }
     }
 
-    public static int decompress(int size, @NotNull ByteBuf in, @NotNull ByteBuf out) {
+    public static int decompress(int size, ByteBuf in, ByteBuf out) {
         var before = in.readerIndex();
         var decompressedSize = PacketUtils.readVarint(in);
         var originalSize = size - (in.readerIndex() - before);

@@ -16,18 +16,12 @@
 
 @file:JvmName("Constants")
 
-package net.sharedwonder.mc.ptbridge.utils
+package net.sharedwonder.mc.ptbridge
 
 const val PID_CH_HANDSHAKE: Int = 0x0
-
 const val PID_CL_REQUEST_LOGIN: Int = 0x0
-
 const val PID_CL_ENCRYPTION_RESPONSE: Int = 0x1
-
 const val PID_SL_REQUEST_ENCRYPTION: Int = 0x1
-
 const val PID_SL_LOGIN_SUCCESS: Int = 0x2
-
 const val PID_SL_ENABLE_COMPRESSION: Int = 0x3
-
 const val PID_SP_V47_SET_COMPRESSION_LEVEL: Int = 0x46

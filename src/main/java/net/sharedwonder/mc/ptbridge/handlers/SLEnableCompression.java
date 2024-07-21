@@ -18,11 +18,10 @@ package net.sharedwonder.mc.ptbridge.handlers;
 
 import io.netty.buffer.ByteBuf;
 import net.sharedwonder.mc.ptbridge.ConnectionContext;
+import net.sharedwonder.mc.ptbridge.Constants;
 import net.sharedwonder.mc.ptbridge.packet.HandledFlag;
 import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
 import net.sharedwonder.mc.ptbridge.packet.S2CPacketHandler;
-import net.sharedwonder.mc.ptbridge.utils.Constants;
-import org.jetbrains.annotations.NotNull;
 
 public class SLEnableCompression implements S2CPacketHandler {
     @Override
@@ -31,8 +30,8 @@ public class SLEnableCompression implements S2CPacketHandler {
     }
 
     @Override
-    public @NotNull HandledFlag handle(@NotNull ConnectionContext connectionContext, @NotNull ByteBuf in, @NotNull ByteBuf transformed) {
-        connectionContext.setCompressionThreshold(PacketUtils.readVarint(in));
+    public HandledFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
+        context.setCompressionThreshold(PacketUtils.readVarint(in));
         return HandledFlag.BLOCKED;
     }
 }

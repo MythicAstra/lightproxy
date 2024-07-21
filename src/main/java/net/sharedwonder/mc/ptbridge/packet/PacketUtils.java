@@ -20,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderException;
-import org.jetbrains.annotations.NotNull;
 
 public final class PacketUtils {
     private PacketUtils() {}
@@ -38,21 +37,21 @@ public final class PacketUtils {
         return VARINT_MAX_SIZE;
     }
 
-    public static byte @NotNull [] readBytes(@NotNull ByteBuf buffer) {
+    public static byte[] readBytes(ByteBuf buffer) {
         return readBytes(buffer, buffer.readableBytes());
     }
 
-    public static byte @NotNull [] readBytes(@NotNull ByteBuf buffer, int size) {
+    public static byte[] readBytes(ByteBuf buffer, int size) {
         var bytes = new byte[size];
         buffer.readBytes(bytes);
         return bytes;
     }
 
-    public static void skipChunk(@NotNull ByteBuf buffer) {
+    public static void skipChunk(ByteBuf buffer) {
         buffer.skipBytes(checkChunkSize(readVarint(buffer)));
     }
 
-    public static void skipVarint(@NotNull ByteBuf buffer) {
+    public static void skipVarint(ByteBuf buffer) {
         for (var counter = 0; counter < VARINT_MAX_SIZE; ++counter) {
             var b = buffer.readByte();
             if ((b & 0x80) == 0) {
@@ -63,7 +62,7 @@ public final class PacketUtils {
         throw new DecoderException("Invalid varint");
     }
 
-    public static int readVarint(@NotNull ByteBuf buffer) {
+    public static int readVarint(ByteBuf buffer) {
         var result = 0;
         var shift = 0;
 
@@ -79,7 +78,7 @@ public final class PacketUtils {
         throw new DecoderException("Invalid varint");
     }
 
-    public static void writeVarint(@NotNull ByteBuf buffer, int value) {
+    public static void writeVarint(ByteBuf buffer, int value) {
         var input = value;
 
         while ((input & 0xffffff80) != 0) {
@@ -90,28 +89,28 @@ public final class PacketUtils {
         buffer.writeByte((byte) input);
     }
 
-    public static byte @NotNull [] readByteArray(@NotNull ByteBuf buffer) {
+    public static byte[] readByteArray(ByteBuf buffer) {
         return readBytes(buffer, checkChunkSize(readVarint(buffer)));
     }
 
-    public static void writeByteArray(@NotNull ByteBuf buffer, byte @NotNull [] bytes) {
+    public static void writeByteArray(ByteBuf buffer, byte[] bytes) {
         writeVarint(buffer, bytes.length);
         buffer.writeBytes(bytes);
     }
 
-    public static @NotNull String readUtf8String(@NotNull ByteBuf buffer) {
+    public static String readUtf8String(ByteBuf buffer) {
         return new String(readByteArray(buffer), StandardCharsets.UTF_8);
     }
 
-    public static void writeUtf8String(@NotNull ByteBuf buffer, @NotNull String string) {
+    public static void writeUtf8String(ByteBuf buffer, String string) {
         writeByteArray(buffer, string.getBytes(StandardCharsets.UTF_8));
     }
 
-    public static @NotNull UUID readUuid(@NotNull ByteBuf buffer) {
+    public static UUID readUuid(ByteBuf buffer) {
         return new UUID(buffer.readLong(), buffer.readLong());
     }
 
-    public static void writeUuid(@NotNull ByteBuf buffer, @NotNull UUID uuid) {
+    public static void writeUuid(ByteBuf buffer, UUID uuid) {
         buffer.writeLong(uuid.getMostSignificantBits());
         buffer.writeLong(uuid.getLeastSignificantBits());
     }

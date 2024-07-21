@@ -1,11 +1,10 @@
 plugins {
     `maven-publish`
-    kotlin("jvm")
-    id("org.jetbrains.dokka")
+    kotlin("jvm") version "2.0.0"
 }
 
 val GITHUB_REPO_URL = "https://github.com/sharedwonder/ptbridge"
-val S5W5_GPR_URL = "https://maven.pkg.github.com/sharedwonder/maven-repository"
+val GITHUB_PKG_URL = "https://maven.pkg.github.com/sharedwonder/maven-repository"
 
 group = "net.sharedwonder.mc"
 version = property("version").toString()
@@ -13,13 +12,13 @@ version = property("version").toString()
 repositories {
     mavenLocal()
     mavenCentral()
-    maven(S5W5_GPR_URL)
+    maven(GITHUB_PKG_URL)
 }
 
 dependencies {
     implementation("com.beust:jcommander:1.82")
-    implementation("com.google.code.gson:gson:2.10.1")
-    implementation(platform("io.netty:netty-bom:4.1.109.Final"))
+    implementation("com.google.code.gson:gson:2.11.0")
+    implementation(platform("io.netty:netty-bom:4.1.111.Final"))
     implementation("io.netty:netty-buffer")
     implementation("io.netty:netty-codec")
     implementation("io.netty:netty-common")
@@ -28,16 +27,17 @@ dependencies {
     compileOnly("org.jetbrains:annotations:24.1.0")
     runtimeOnly("org.apache.logging.log4j:log4j-core")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
     withSourcesJar()
 }
 
 kotlin {
-    compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    jvmToolchain(21)
     compilerOptions.freeCompilerArgs.add("-Xjvm-default=all")
 }
 
@@ -77,7 +77,7 @@ publishing {
 
     repositories {
         mavenLocal()
-        maven(S5W5_GPR_URL) {
+        maven(GITHUB_PKG_URL) {
             name = "GitHubPackages"
             credentials {
                 username = findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
@@ -87,21 +87,25 @@ publishing {
     }
 }
 
-tasks {
-    withType<JavaCompile> {
-        options.encoding = "UTF-8"
-    }
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
+}
 
-    jar {
-        manifest.attributes["Main-Class"] = "net.sharedwonder.mc.ptbridge.Main"
+tasks.processResources {
+    filesMatching("version.json") {
+        expand("version" to version)
     }
+}
 
-    test {
-        useJUnitPlatform()
-    }
+tasks.jar {
+    manifest.attributes["Main-Class"] = "net.sharedwonder.mc.ptbridge.Main"
+}
 
-    register<Copy>("copyDependencies") {
-        from(configurations.runtimeClasspath)
-        into("${layout.buildDirectory.get().asFile}/dependencies/main")
-    }
+tasks.test {
+    useJUnitPlatform()
+}
+
+tasks.register<Copy>("copyDependencies") {
+    from(configurations.runtimeClasspath)
+    into("${layout.buildDirectory.get().asFile}/dependencies/main")
 }

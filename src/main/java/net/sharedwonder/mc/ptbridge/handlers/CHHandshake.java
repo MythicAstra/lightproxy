@@ -18,12 +18,11 @@ package net.sharedwonder.mc.ptbridge.handlers;
 
 import io.netty.buffer.ByteBuf;
 import net.sharedwonder.mc.ptbridge.ConnectionContext;
+import net.sharedwonder.mc.ptbridge.Constants;
 import net.sharedwonder.mc.ptbridge.packet.C2SPacketHandler;
 import net.sharedwonder.mc.ptbridge.packet.HandledFlag;
 import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
 import net.sharedwonder.mc.ptbridge.utils.ConnectionState;
-import net.sharedwonder.mc.ptbridge.utils.Constants;
-import org.jetbrains.annotations.NotNull;
 
 public class CHHandshake implements C2SPacketHandler {
     @Override
@@ -32,17 +31,17 @@ public class CHHandshake implements C2SPacketHandler {
     }
 
     @Override
-    public @NotNull HandledFlag handle(@NotNull ConnectionContext connectionContext, @NotNull ByteBuf in, @NotNull ByteBuf transformed) {
-        connectionContext.setProtocolVersion(PacketUtils.readVarint(in));
+    public HandledFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
+        context.setProtocolVersion(PacketUtils.readVarint(in));
         PacketUtils.skipChunk(in);
         in.skipBytes(2);
         var requestedState = ConnectionState.getById(in.readByte());
 
-        connectionContext.setConnectionState(requestedState);
+        context.setState(requestedState);
 
-        PacketUtils.writeVarint(transformed, connectionContext.getProtocolVersion());
-        PacketUtils.writeUtf8String(transformed, connectionContext.remoteAddress);
-        transformed.writeShort(connectionContext.remotePort);
+        PacketUtils.writeVarint(transformed, context.getProtocolVersion());
+        PacketUtils.writeUtf8String(transformed, context.remoteAddress);
+        transformed.writeShort(context.remotePort);
         transformed.writeByte(requestedState.getId());
 
         return HandledFlag.TRANSFORMED;

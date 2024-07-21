@@ -22,6 +22,7 @@ import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URL
 import java.util.UUID
+import com.google.gson.Gson
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
@@ -31,6 +32,7 @@ import com.google.gson.JsonParseException
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
 import com.google.gson.annotations.JsonAdapter
+import net.sharedwonder.mc.ptbridge.http.HTTPRequestUtils
 import net.sharedwonder.mc.ptbridge.mcauth.MCAuth
 
 @JsonAdapter(PlayerProfile.JsonTypeAdapter::class)
@@ -99,8 +101,8 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
             }
         }
     }
-
-    private companion object {
-        private val JOIN_SERVER_URL: URL = URI("https://sessionserver.mojang.com/session/minecraft/join").toURL()
-    }
 }
+
+private val JOIN_SERVER_URL: URL = URI("https://sessionserver.mojang.com/session/minecraft/join").toURL()
+
+private val GSON = Gson()

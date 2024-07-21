@@ -18,11 +18,10 @@ package net.sharedwonder.mc.ptbridge.handlers;
 
 import io.netty.buffer.ByteBuf;
 import net.sharedwonder.mc.ptbridge.ConnectionContext;
+import net.sharedwonder.mc.ptbridge.Constants;
 import net.sharedwonder.mc.ptbridge.packet.HandledFlag;
 import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
 import net.sharedwonder.mc.ptbridge.packet.S2CPacketHandler;
-import net.sharedwonder.mc.ptbridge.utils.Constants;
-import org.jetbrains.annotations.NotNull;
 
 public class SPV47SetCompressionLevel implements S2CPacketHandler {
     @Override
@@ -31,11 +30,13 @@ public class SPV47SetCompressionLevel implements S2CPacketHandler {
     }
 
     @Override
-    public @NotNull HandledFlag handle(@NotNull ConnectionContext connectionContext, @NotNull ByteBuf in, @NotNull ByteBuf transformed) {
-        if (connectionContext.getProtocolVersion() == 47) {
-            connectionContext.setCompressionThreshold(PacketUtils.readVarint(in));
+    public HandledFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
+        if (context.getProtocolVersion() == MINECRAFT_1_8_X_PROTOCOL_VERSION) {
+            context.setCompressionThreshold(PacketUtils.readVarint(in));
             return HandledFlag.BLOCKED;
         }
         return HandledFlag.PASSED;
     }
+
+    private static final int MINECRAFT_1_8_X_PROTOCOL_VERSION = 47;
 }

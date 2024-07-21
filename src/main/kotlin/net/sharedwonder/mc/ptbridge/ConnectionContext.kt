@@ -16,12 +16,8 @@
 
 package net.sharedwonder.mc.ptbridge
 
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.set
-import kotlin.concurrent.thread
 import java.util.Queue
-import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Function
 import java.util.function.Supplier
 import io.netty.buffer.ByteBuf
@@ -38,21 +34,21 @@ class ConnectionContext internal constructor(proxyServer: ProxyServer) {
 
     @JvmField val remotePort: Int = proxyServer.remotePort
 
-    @JvmField val minecraftAccounts: Map<String, PlayerProfile>? = proxyServer.minecraftAccounts
+    @JvmField val accounts: Map<String, PlayerProfile>? = proxyServer.accounts
 
-    @JvmField internal val toServerPacketQueue: Queue<ByteBuf> = LinkedBlockingQueue()
+    @JvmField val attachedC2SPackets: Queue<ByteBuf> = ConcurrentLinkedQueue()
 
-    @JvmField internal val toClientPacketQueue: Queue<ByteBuf> = LinkedBlockingQueue()
+    @JvmField val attachedS2CPackets: Queue<ByteBuf> = ConcurrentLinkedQueue()
 
-    private val externalContexts: Map<Class<out ExternalContext>, ExternalContext> = buildMap {
+    val externalContexts: Map<Class<out ExternalContext>, ExternalContext> = buildMap {
         for ((type, generator) in EXTERNAL_CONTEXT_TYPES) {
-            put(type, generator(this@ConnectionContext))
+            put(type, generator.apply(this@ConnectionContext))
         }
     }
 
-    var encryptionContext: EncryptionContext = EncryptionContext.disabled()
+    var state: ConnectionState = ConnectionState.HANDSHAKE
 
-    var connectionState: ConnectionState = ConnectionState.HANDSHAKE
+    var encryptionContext: EncryptionContext = EncryptionContext.disabled()
 
     var compressionThreshold: Int = -1
 
@@ -60,6 +56,7 @@ class ConnectionContext internal constructor(proxyServer: ProxyServer) {
     var clientAddress: String
         get() = checkNotNull(_clientAddress) { "clientAddress is not set" }
         set(value) {
+            check(_clientAddress == null)
             _clientAddress = value
         }
 
@@ -67,6 +64,7 @@ class ConnectionContext internal constructor(proxyServer: ProxyServer) {
     var protocolVersion: Int
         get() = checkNotNull(_protocolVersion) { "protocolVersion is not set" }
         set(value) {
+            check(_protocolVersion == null)
             _protocolVersion = value
         }
 
@@ -74,68 +72,66 @@ class ConnectionContext internal constructor(proxyServer: ProxyServer) {
     var playerUsername: String
         get() = checkNotNull(_playerUsername) { "playerUsername is not set" }
         set(value) {
+            check(_playerUsername == null)
             _playerUsername = value
         }
 
     fun <T : ExternalContext> getExternalContext(type: Class<T>): T = type.cast(externalContexts[type])
 
     fun sendToClient(packet: ByteBuf) {
-        toClientPacketQueue.add(packet)
+        attachedS2CPackets.add(packet)
     }
 
     fun sendToServer(packet: ByteBuf) {
-        toServerPacketQueue.add(packet)
+        attachedC2SPackets.add(packet)
     }
 
     @PublishedApi
     internal fun onConnect() {
-        val threads = ArrayList<Thread>(externalContexts.size)
         for (externalContext in externalContexts.values) {
-            threads.add(thread {
-                try {
-                    externalContext.onConnect()
-                } catch (exception: Throwable) {
-                    LOGGER.error("An error occurred while calling onConnect on ${externalContext.javaClass.typeName}", exception)
-                }
-            })
+            try {
+                externalContext.onConnect()
+            } catch (exception: Throwable) {
+                LOGGER.error("An error occurred while calling onConnect on ${externalContext.javaClass.typeName}", exception)
+            }
         }
-        threads.forEach { it.join() }
+    }
+
+    @PublishedApi
+    internal fun afterLogin() {
+        for (externalContext in externalContexts.values) {
+            try {
+                externalContext.afterLogin()
+            } catch (exception: Throwable) {
+                LOGGER.error("An error occurred while calling afterLogin on ${externalContext.javaClass.typeName}", exception)
+            }
+        }
     }
 
     @PublishedApi
     internal fun onDisconnect() {
-        val threads = ArrayList<Thread>(externalContexts.size)
         for (externalContext in externalContexts.values) {
-            threads.add(thread {
-                try {
-                    externalContext.onDisconnect()
-                } catch (exception: Throwable) {
-                    LOGGER.error("An error occurred while calling onDisconnect on ${externalContext.javaClass.typeName}", exception)
-                }
-            })
+            try {
+                externalContext.onDisconnect()
+            } catch (exception: Throwable) {
+                LOGGER.error("An error occurred while calling onDisconnect on ${externalContext.javaClass.typeName}", exception)
+            }
         }
-        threads.forEach { it.join() }
     }
 
     companion object {
         private val LOGGER = LogManager.getLogger(ConnectionContext::class.java)
 
-        private val EXTERNAL_CONTEXT_TYPES: MutableMap<Class<out ExternalContext>, (ConnectionContext) -> ExternalContext> = HashMap()
+        private val EXTERNAL_CONTEXT_TYPES: MutableMap<Class<out ExternalContext>, Function<in ConnectionContext, out ExternalContext>> = HashMap()
 
         @JvmStatic
-        @JvmSynthetic
-        fun <T : ExternalContext> registerExternalContextType(type: Class<T>, generator: (ConnectionContext) -> T) {
+        fun <T : ExternalContext> registerExternalContextType(type: Class<T>, generator: Supplier<T>) {
+            EXTERNAL_CONTEXT_TYPES[type] = Function { generator.get() }
+        }
+
+        @JvmStatic
+        fun <T : ExternalContext> registerExternalContextType(type: Class<T>, generator: Function<ConnectionContext, T>) {
             EXTERNAL_CONTEXT_TYPES[type] = generator
-        }
-
-        @JvmStatic
-        fun <T : ExternalContext> registerExternalContextType(type: Class<T>, generator: Supplier<out T>) {
-            EXTERNAL_CONTEXT_TYPES[type] = { generator.get() }
-        }
-
-        @JvmStatic
-        fun <T : ExternalContext> registerExternalContextType(type: Class<T>, generator: Function<ConnectionContext, out T>) {
-            EXTERNAL_CONTEXT_TYPES[type] = generator::apply
         }
 
         @JvmStatic

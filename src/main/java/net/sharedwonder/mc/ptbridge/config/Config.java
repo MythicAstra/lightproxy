@@ -14,13 +14,21 @@
  * limitations under the License.
  */
 
-package net.sharedwonder.mc.ptbridge
+package net.sharedwonder.mc.ptbridge.config;
 
-import net.sharedwonder.mc.ptbridge.utils.GSON
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-object MetaInfo {
-    const val ID = "ptbridge"
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface Config {
+    String name();
 
-    @JvmField val VERSION: String = GSON.fromJson(javaClass.classLoader.getResourceAsStream("META-INF/net.sharedwonder.mc.ptbridge.json")!!
-        .reader(Charsets.UTF_8), Map::class.java)["version"] as String
+    ConfigFileType type();
+
+    boolean withoutExtension() default false;
 }

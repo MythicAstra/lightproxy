@@ -32,6 +32,9 @@ nbproject/
 # VS Code
 .vscode/
 
+# Kotlin
+.kotlin/
+
 # Microsoft Windows
 desktop.ini
 

@@ -19,5 +19,7 @@ package net.sharedwonder.mc.ptbridge.addon;
 public interface ExternalContext {
     default void onConnect() {}
 
+    default void afterLogin() {}
+
     default void onDisconnect() {}
 }

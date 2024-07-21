@@ -18,20 +18,19 @@ package net.sharedwonder.mc.ptbridge.crypt;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import org.jetbrains.annotations.NotNull;
 
 public final class EncryptionHandshakingContext implements EncryptionContext {
-    public final @NotNull String baseServerId;
+    public final String baseServerId;
 
-    public final @NotNull PublicKey originServerPublicKey;
+    public final PublicKey originServerPublicKey;
 
-    public final byte @NotNull [] verifyToken;
+    public final byte[] verifyToken;
 
-    public final @NotNull PublicKey proxyServerPublicKey;
+    public final PublicKey proxyServerPublicKey;
 
-    public final @NotNull PrivateKey proxyServerPrivateKey;
+    public final PrivateKey proxyServerPrivateKey;
 
-    EncryptionHandshakingContext(@NotNull String baseServerId, @NotNull PublicKey originServerPublicKey, byte @NotNull [] verifyToken) {
+    EncryptionHandshakingContext(String baseServerId, PublicKey originServerPublicKey, byte[] verifyToken) {
         this.baseServerId = baseServerId;
         this.originServerPublicKey = originServerPublicKey;
         this.verifyToken = verifyToken;

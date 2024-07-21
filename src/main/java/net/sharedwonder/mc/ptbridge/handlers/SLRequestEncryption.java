@@ -18,15 +18,14 @@ package net.sharedwonder.mc.ptbridge.handlers;
 
 import io.netty.buffer.ByteBuf;
 import net.sharedwonder.mc.ptbridge.ConnectionContext;
+import net.sharedwonder.mc.ptbridge.Constants;
 import net.sharedwonder.mc.ptbridge.crypt.CryptUtils;
 import net.sharedwonder.mc.ptbridge.crypt.EncryptionContext;
 import net.sharedwonder.mc.ptbridge.packet.HandledFlag;
 import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
 import net.sharedwonder.mc.ptbridge.packet.S2CPacketHandler;
-import net.sharedwonder.mc.ptbridge.utils.Constants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 public class SLRequestEncryption implements S2CPacketHandler {
     @Override
@@ -35,19 +34,19 @@ public class SLRequestEncryption implements S2CPacketHandler {
     }
 
     @Override
-    public @NotNull HandledFlag handle(@NotNull ConnectionContext connectionContext, @NotNull ByteBuf in, @NotNull ByteBuf transformed) {
+    public HandledFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
         var baseServerId = PacketUtils.readUtf8String(in);
         var publicKey = CryptUtils.decodePublicKey(PacketUtils.readByteArray(in));
         var verifyToken = PacketUtils.readByteArray(in);
 
         var handshakingContext = EncryptionContext.handshaking(baseServerId, publicKey, verifyToken);
-        connectionContext.setEncryptionContext(handshakingContext);
+        context.setEncryptionContext(handshakingContext);
 
         PacketUtils.writeUtf8String(transformed, baseServerId);
         PacketUtils.writeByteArray(transformed, handshakingContext.proxyServerPublicKey.getEncoded());
         PacketUtils.writeByteArray(transformed, verifyToken);
 
-        LOGGER.info("Server requested encryption, client username: {}", connectionContext.getPlayerUsername());
+        LOGGER.info("Server requested encryption, client username: " + context.getPlayerUsername());
 
         return HandledFlag.TRANSFORMED;
     }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.sharedwonder.mc.ptbridge.utils
+package net.sharedwonder.mc.ptbridge.http
 
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
@@ -26,12 +26,7 @@ import java.util.function.Consumer
 object HTTPRequestUtils {
     @JvmStatic
     @JvmSynthetic
-    fun request(url: String, method: String = "GET", contentType: String? = null, body: Any? = null, block: HttpURLConnection.() -> Unit = {}): HTTPRequestResult =
-        request(stringToUrl(url), method, contentType, body, block)
-
-    @JvmStatic
-    @JvmSynthetic
-    fun request(url: URL, method: String = "GET", contentType: String? = null, body: Any? = null, block: HttpURLConnection.() -> Unit = {}): HTTPRequestResult {
+    fun request(url: URL, method: String = "GET", contentType: String? = null, body: Any? = null, block: (HttpURLConnection.() -> Unit)? = null): HTTPRequestResult {
         require(url.protocol == "http" || url.protocol == "https") { "Protocol of the URL should be HTTP/HTTPS, but was ${url.protocol.uppercase()}" }
 
         val bytes = when (body) {
@@ -57,7 +52,7 @@ object HTTPRequestUtils {
                         it.flush()
                     }
                 }
-                block.invoke(connection)
+                block?.invoke(connection)
 
                 val status = connection.responseCode
                 return if (status >= 400) {
@@ -74,19 +69,24 @@ object HTTPRequestUtils {
     }
 
     @JvmStatic
-    @JvmOverloads
-    @JvmName("request")
-    fun _request(url: String, method: String = "GET", contentType: String? = null, body: Any? = null, block: Consumer<in HttpURLConnection> = Consumer {}): HTTPRequestResult =
-        request(url, method, contentType, body) { block.accept(this) }
+    @JvmSynthetic
+    fun request(url: String, method: String = "GET", contentType: String? = null, body: Any? = null, block: (HttpURLConnection.() -> Unit)? = null): HTTPRequestResult =
+        request(stringToUrl(url), method, contentType, body, block)
 
     @JvmStatic
     @JvmOverloads
     @JvmName("request")
-    fun _request(url: URL, method: String = "GET", contentType: String? = null, body: Any? = null, block: Consumer<in HttpURLConnection> = Consumer {}): HTTPRequestResult =
-        request(url, method, contentType, body) { block.accept(this) }
+    fun _request(url: URL, method: String = "GET", contentType: String? = null, body: Any? = null, block: Consumer<in HttpURLConnection>? = null): HTTPRequestResult =
+        request(url, method, contentType, body, block?.let { it::accept })
 
     @JvmStatic
-    fun joinParameters(baseUrl: String, params: Map<String, String>): String = baseUrl + '?' + encodeMap(params)
+    @JvmOverloads
+    @JvmName("request")
+    fun _request(url: String, method: String = "GET", contentType: String? = null, body: Any? = null, block: Consumer<in HttpURLConnection>? = null): HTTPRequestResult =
+        request(url, method, contentType, body, block?.let { it::accept })
+
+    @JvmStatic
+    fun joinParameters(baseUrl: String, parameters: Map<String, String>): String = baseUrl + '?' + encodeMap(parameters)
 
     @JvmStatic
     fun encodeMap(params: Map<String, String>): String {

@@ -25,18 +25,17 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.sharedwonder.mc.ptbridge.packet.PacketType;
 import net.sharedwonder.mc.ptbridge.packet.PacketUtils;
-import org.jetbrains.annotations.NotNull;
 
 public final class EncryptionEnabledContext implements EncryptionContext {
-    private final @NotNull Cipher c2sEncryptionCipher;
+    private final Cipher c2sEncryptionCipher;
 
-    private final @NotNull Cipher c2sDecryptionCipher;
+    private final Cipher c2sDecryptionCipher;
 
-    private final @NotNull Cipher s2cEncryptionCipher;
+    private final Cipher s2cEncryptionCipher;
 
-    private final @NotNull Cipher s2cDecryptionCipher;
+    private final Cipher s2cDecryptionCipher;
 
-    EncryptionEnabledContext(@NotNull SecretKey clientSecretKey, @NotNull SecretKey proxyServerSecretKey) {
+    EncryptionEnabledContext(SecretKey clientSecretKey, SecretKey proxyServerSecretKey) {
         try {
             c2sEncryptionCipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
             c2sEncryptionCipher.init(Cipher.ENCRYPT_MODE, proxyServerSecretKey, new IvParameterSpec(proxyServerSecretKey.getEncoded()));
@@ -55,12 +54,12 @@ public final class EncryptionEnabledContext implements EncryptionContext {
     }
 
     @Override
-    public @NotNull ByteBuf encrypt(@NotNull PacketType type, @NotNull ByteBuf in) {
+    public ByteBuf encrypt(PacketType type, ByteBuf in) {
         return operate(in, type == PacketType.C2S ? c2sEncryptionCipher : s2cEncryptionCipher);
     }
 
     @Override
-    public @NotNull ByteBuf decrypt(@NotNull PacketType type, @NotNull ByteBuf in) {
+    public ByteBuf decrypt(PacketType type, ByteBuf in) {
         return operate(in, type == PacketType.C2S ? c2sDecryptionCipher : s2cDecryptionCipher);
     }
 
@@ -71,7 +70,7 @@ public final class EncryptionEnabledContext implements EncryptionContext {
 
     private static final String CIPHER_TRANSFORMATION = "AES/CFB8/NoPadding";
 
-    private static ByteBuf operate(@NotNull ByteBuf in, @NotNull Cipher cipher) {
+    private static ByteBuf operate(ByteBuf in, Cipher cipher) {
         var size = cipher.getOutputSize(in.readableBytes());
         var bytes = PacketUtils.readBytes(in);
         try {

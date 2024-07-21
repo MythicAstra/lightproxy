@@ -18,10 +18,9 @@ package net.sharedwonder.mc.ptbridge.packet;
 
 import io.netty.buffer.ByteBuf;
 import net.sharedwonder.mc.ptbridge.ConnectionContext;
-import org.jetbrains.annotations.NotNull;
 
 public sealed interface PacketHandler permits C2SPacketHandler, S2CPacketHandler {
     int getId();
 
-    @NotNull HandledFlag handle(@NotNull ConnectionContext connectionContext, @NotNull ByteBuf in, @NotNull ByteBuf transformed);
+    HandledFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) throws Exception;
 }

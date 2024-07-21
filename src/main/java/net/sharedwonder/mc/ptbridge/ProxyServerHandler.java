@@ -28,17 +28,16 @@ import io.netty.channel.ChannelOption;
 import net.sharedwonder.mc.ptbridge.packet.PacketType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
-public final class ProxyServerHandler extends ProxyChannelHandler {
+final class ProxyServerHandler extends ProxyChannelHandler {
     private Channel serverBoundChannel;
 
-    public ProxyServerHandler(@NotNull ProxyServer proxyServer) {
+    ProxyServerHandler(ProxyServer proxyServer) {
         super(new ConnectionContext(proxyServer), PacketType.C2S);
     }
 
     @Override
-    public void channelActive(@NotNull ChannelHandlerContext context) {
+    public void channelActive(ChannelHandlerContext context) {
         var channel = context.channel();
         channel.config().setAutoRead(false);
 
@@ -59,7 +58,7 @@ public final class ProxyServerHandler extends ProxyChannelHandler {
             if (listener.isSuccess()) {
                 channel.config().setAutoRead(true);
             } else {
-                LOGGER.error("Failed to connect to the remote host: {}", socketAddress);
+                LOGGER.error("Failed to connect to the remote host: " + socketAddress);
                 if (channel.isActive()) {
                     channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
                 }
@@ -69,7 +68,7 @@ public final class ProxyServerHandler extends ProxyChannelHandler {
     }
 
     @Override
-    public void channelInactive(@NotNull ChannelHandlerContext context) {
+    public void channelInactive(ChannelHandlerContext context) {
         super.channelInactive(context);
         if (serverBoundChannel.isActive()) {
             sendMessage(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
@@ -78,13 +77,13 @@ public final class ProxyServerHandler extends ProxyChannelHandler {
     }
 
     @Override
-    public void exceptionCaught(@NotNull ChannelHandlerContext context, Throwable exception) {
+    public void exceptionCaught(ChannelHandlerContext context, Throwable exception) {
         LOGGER.error("Caught an exception in the proxy server handler", exception);
         context.close();
     }
 
     @Override
-    protected @NotNull ChannelFuture sendMessage(@NotNull ByteBuf message) {
+    ChannelFuture sendMessage(ByteBuf message) {
         return serverBoundChannel.writeAndFlush(message);
     }
 
