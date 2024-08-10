@@ -37,7 +37,6 @@ java {
 }
 
 kotlin {
-    jvmToolchain(21)
     compilerOptions.freeCompilerArgs.add("-Xjvm-default=all")
 }
 
