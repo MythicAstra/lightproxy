@@ -1,1 +1,1 @@
-rootProject.name = "ptbridge"
+rootProject.name = "lightproxy"
