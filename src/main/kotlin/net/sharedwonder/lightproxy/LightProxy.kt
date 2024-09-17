@@ -48,28 +48,21 @@ class LightProxy(val bindPort: Int, host: String, port: Int, accountFile: File, 
                 try {
                     accounts = readAccountsFromFile(accountFile)
                 } catch (exception: Exception) {
-                    logger.error("An error occurred while reading the accounts file: $exception")
+                    logger.error("An error occurred while reading the accounts file", exception)
                 }
                 if (accounts != null && refreshTokensIfExpired(accounts)) {
                     try {
                         writeAccountsToFile(accountFile, accounts)
                     } catch (exception: Exception) {
-                        logger.error("An error occurred while writing the accounts file: $exception")
+                        logger.error("An error occurred while writing the accounts file", exception)
                     }
                 }
             }
             this.accounts = accounts
 
-            val lookupResult =
-                if (port == DEFAULT_PORT) {
-                    try {
-                        lookupServer(host)
-                    } catch (exception: Exception) {
-                        null
-                    }
-                } else null
-            remoteAddress = lookupResult?.first ?: host
-            remotePort = lookupResult?.second ?: port
+            val server = lookupServer(host, port)
+            remoteAddress = server.first
+            remotePort = server.second
 
             logger.info(fun(): String = "Remote server: ${if (':' in remoteAddress) "[$remoteAddress]" else remoteAddress}:$remotePort")
         } catch (exception: Throwable) {
@@ -122,26 +115,33 @@ class LightProxy(val bindPort: Int, host: String, port: Int, accountFile: File, 
             return server.run()
         }
 
-        private fun lookupServer(hostname: String): Pair<String, Int> {
-            val environment = Hashtable<String, String>()
-            environment[DirContext.INITIAL_CONTEXT_FACTORY] = "com.sun.jndi.dns.DnsContextFactory"
-            val dirContext = InitialDirContext(environment)
-            val domain = "_minecraft._tcp.$hostname"
-            val attributes = dirContext.getAttributes(domain, arrayOf("SRV"))
-            dirContext.close()
+        private fun lookupServer(host: String, port: Int): Pair<String, Int> {
+            if (port == DEFAULT_PORT) {
+                try {
+                    val environment = Hashtable<String, String>()
+                    environment[DirContext.INITIAL_CONTEXT_FACTORY] = "com.sun.jndi.dns.DnsContextFactory"
+                    val dirContext = InitialDirContext(environment)
+                    val domain = "_minecraft._tcp.$host"
+                    val attributes = dirContext.getAttributes(domain, arrayOf("SRV"))
+                    dirContext.close()
 
-            val srv = attributes["srv"].get().toString()
-            logger.info(fun(): String = "Found a SRV record on $domain: $srv")
+                    val srv = attributes["srv"].get().toString()
+                    logger.info(fun(): String = "Found a SRV record on $domain: $srv")
 
-            val content = srv.split(' ')
-            return Pair(content[3], content[2].toInt())
+                    val content = srv.split(' ')
+                    return Pair(content[3], content[2].toInt())
+                } catch (exception: Exception) {
+                    return Pair(host, port)
+                }
+            }
+            return Pair(host, port)
         }
 
         private fun refreshTokensIfExpired(accounts: MutableMap<String, PlayerProfile>): Boolean {
             var modified = false
             for (entry in accounts) {
-                val auth = entry.value.auth
-                if (System.currentTimeMillis() >= (auth ?: continue).expirationTime) {
+                val auth = entry.value.auth ?: continue
+                if (System.currentTimeMillis() >= auth.expirationTime) {
                     modified = true
                     logger.info(fun(): String = "The access token of the Minecraft account '${entry.key}' is expired, refreshing...")
                     try {

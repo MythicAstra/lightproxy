@@ -16,11 +16,11 @@
 
 package net.sharedwonder.lightproxy.util
 
-import java.io.StringWriter
 import java.lang.reflect.Type
 import java.math.BigInteger
 import java.net.HttpURLConnection
 import java.net.URI
+import java.net.http.HttpRequest
 import java.util.UUID
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
@@ -31,36 +31,42 @@ import com.google.gson.JsonParseException
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
 import com.google.gson.annotations.JsonAdapter
-import com.google.gson.stream.JsonWriter
-import net.sharedwonder.lightproxy.http.HTTPRequestUtils
-import net.sharedwonder.lightproxy.mcauth.MCAuth
+import net.sharedwonder.lightproxy.http.HttpUtils
+import net.sharedwonder.lightproxy.mcauth.McAuth
 
 @JsonAdapter(PlayerProfile.JsonTypeAdapter::class)
-data class PlayerProfile @JvmOverloads constructor(val username: String, val uuid: UUID, val auth: MCAuth? = null) {
+data class PlayerProfile @JvmOverloads constructor(val username: String, val uuid: UUID, val auth: McAuth? = null) {
     fun joinServer(serverId: ByteArray) {
         checkNotNull(auth) { "This player profile has no authentication information" }
 
-        val body = StringWriter().use {
-            JsonWriter(it).beginObject()
-                .name("accessToken").value(auth.accessToken)
-                .name("selectedProfile").value(UUIDUtils.uuidToString(uuid))
-                .name("serverId").value(BigInteger(serverId).toString(16))
-                .endObject()
-            it.toString()
-        }
-        HTTPRequestUtils.request(joinServerUrl, "POST", "application/json; charset=utf-8", body)
-            .onFailure { throw buildException("Failed to request to join the server for the player '$username/${UUIDUtils.uuidToString(uuid)}' on Minecraft Session Server") }
+        val body = JsonBuilder().objectValue {
+            entry("accessToken", auth.accessToken)
+            entry("selectedProfile", UuidUtils.uuidToString(uuid))
+            entry("serverId", BigInteger(serverId).toString(16))
+        }.toString()
+
+        HttpUtils.request(
+            HttpRequest.newBuilder(joinServerUri)
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .header("Content-Type", "application/json; charset=utf-8")
+                .build()
+        ).onFailure { throw buildException("Failed to request to join the server for the player '$username/${UuidUtils.uuidToString(uuid)}' on Minecraft Session Server") }
     }
 
     @JvmOverloads
     fun hasJoinedServer(serverId: ByteArray, clientIp: String? = null): Boolean {
-        val p1 = "username" to username
-        val p2 = "serverId" to BigInteger(serverId).toString(16)
-        val args = if (clientIp != null) mapOf(p1, p2, "ip" to clientIp) else mapOf(p1, p2)
+        val args = buildMap {
+            put("username", username)
+            put("serverId", BigInteger(serverId).toString(16))
+            if (clientIp != null) {
+                put("ip", clientIp)
+            }
+        }
+        val uri = "https://sessionserver.mojang.com/session/minecraft/hasJoined?" + HttpUtils.encodeMap(args)
 
-        return (HTTPRequestUtils.request(HTTPRequestUtils.joinParameters("https://sessionserver.mojang.com/session/minecraft/hasJoined", args)).onFailure {
-            throw buildException("Failed to determine whether the player '$username/${UUIDUtils.uuidToString(uuid)}' has joined the server on Minecraft Session Server")
-        }.response).status == HttpURLConnection.HTTP_OK
+        return HttpUtils.request(HttpRequest.newBuilder(URI.create(uri)).GET().build())
+            .whenFailedByException { throw buildException("Failed to request to verify that the player '$username/${UuidUtils.uuidToString(uuid)}' has joined the server") }
+            .asResponse.status.let { it == HttpURLConnection.HTTP_OK }
     }
 
     internal class JsonTypeAdapter : JsonSerializer<PlayerProfile>, JsonDeserializer<PlayerProfile> {
@@ -71,7 +77,7 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
 
             val json = JsonObject()
             json.addProperty("username", src.username)
-            json.addProperty("uuid", UUIDUtils.uuidToString(src.uuid))
+            json.addProperty("uuid", UuidUtils.uuidToString(src.uuid))
             if (src.auth != null) {
                 json.add("auth", JsonObject().apply {
                     addProperty("impl", src.auth.javaClass.typeName)
@@ -86,14 +92,14 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
                 json as JsonObject
 
                 val username = json["username"].asString
-                val uuid = UUIDUtils.stringToUuid(json["uuid"].asString)
+                val uuid = UuidUtils.stringToUuid(json["uuid"].asString)
                 val auth = json["auth"]?.let {
                     if (!it.isJsonNull) {
                         it as JsonObject
                         val impl = it["impl"].asString
                         val content = it["data"]
                         try {
-                            context.deserialize<MCAuth>(content, Class.forName(impl))
+                            context.deserialize<McAuth>(content, Class.forName(impl))
                         } catch (exception: ClassCastException) {
                             throw RuntimeException("Not a MCAuth implementation: $impl")
                         } catch (exception: ClassNotFoundException) {
@@ -110,4 +116,4 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
     }
 }
 
-private val joinServerUrl = URI("https://sessionserver.mojang.com/session/minecraft/join").toURL()
+private val joinServerUri = URI("https://sessionserver.mojang.com/session/minecraft/join")

@@ -87,7 +87,7 @@ final class ProxyServerHandler extends ProxyChannelHandler {
 
     @Override
     ChannelFuture sendMessage(ByteBuf message) {
-        assert serverBoundChannel != null; 
+        assert serverBoundChannel != null;
         return serverBoundChannel.writeAndFlush(message);
     }
 

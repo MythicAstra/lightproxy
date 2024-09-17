@@ -18,38 +18,37 @@ package net.sharedwonder.lightproxy
 
 import java.io.File
 import java.util.regex.Pattern
-import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import net.sharedwonder.lightproxy.mcauth.msa.MCAuthWithMSA
-import net.sharedwonder.lightproxy.mcauth.msa.MSAAuthTokenType
+import com.google.gson.stream.JsonWriter
+import net.sharedwonder.lightproxy.mcauth.msa.McAuthWithMsa
+import net.sharedwonder.lightproxy.mcauth.msa.MsaAuthTokenType
+import net.sharedwonder.lightproxy.util.JsonUtils
 import net.sharedwonder.lightproxy.util.PlayerProfile
-import net.sharedwonder.lightproxy.util.UUIDUtils
+import net.sharedwonder.lightproxy.util.UuidUtils
 
-private const val MSA_LOGIN_URL = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code" +
+private const val MSA_LOGIN_URI = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code" +
     "&scope=service::user.auth.xboxlive.com::MBI_SSL&redirect_uri=https://login.live.com/oauth20_desktop.srf"
 
-private val msaLoginRedirectUrlPattern = Pattern.compile("^http(s)?://login\\.live\\.com/oauth20_desktop\\.srf\\?code=([^&]+)(&.+)?\$")
-
-private val gson = Gson()
+private val msaRedirectUriPattern = Pattern.compile("^\\s*http(s)?://login\\.live\\.com/oauth20_desktop\\.srf\\?code=([^&\\s]+)(.+)?\$")
 
 internal fun readAccountsFromFile(file: File): MutableMap<String, PlayerProfile> {
     return if (file.isFile) {
         file.reader().use {
             @Suppress("UNCHECKED_CAST")
-            gson.fromJson(it, TypeToken.getParameterized(Map::class.java, String::class.java, PlayerProfile::class.java)) as MutableMap<String, PlayerProfile>
+            JsonUtils.fromJson(it, TypeToken.getParameterized(Map::class.java, String::class.java, PlayerProfile::class.java)) as MutableMap<String, PlayerProfile>
         }
     } else mutableMapOf()
 }
 
 internal fun writeAccountsToFile(file: File, accounts: Map<String, PlayerProfile>) {
-    val jsonWriter = gson.newJsonWriter(file.writer())
+    val jsonWriter = JsonWriter(file.writer())
     jsonWriter.setIndent("    ")
-    jsonWriter.use { gson.toJson(accounts, Map::class.java, it) }
+    jsonWriter.use { JsonUtils.toJson(accounts, Map::class.java, it) }
 }
 
 internal fun addMinecraftAccount(accountFile: File): Int {
     try {
-        println("Open '$MSA_LOGIN_URL' to login your Microsoft Account.")
+        println("Open '$MSA_LOGIN_URI' to login your Microsoft Account.")
         println("Then type the authorization code or the redirect URL here:")
         val input = readlnOrNull()
         if (input.isNullOrBlank()) {
@@ -57,10 +56,10 @@ internal fun addMinecraftAccount(accountFile: File): Int {
             return 1
         }
 
-        val matcher = msaLoginRedirectUrlPattern.matcher(input)
-        val code = if (matcher.matches()) matcher.group(2) else input
+        val matcher = msaRedirectUriPattern.matcher(input)
+        val code = if (matcher.matches()) matcher.group(2) else input.trim(Char::isWhitespace)
 
-        val profile = MCAuthWithMSA(MSAAuthTokenType.AUTHORIZATION_CODE, code).createProfile()
+        val profile = McAuthWithMsa(MsaAuthTokenType.AUTHORIZATION_CODE, code).createProfile()
         val accounts = readAccountsFromFile(accountFile)
         if (accounts.containsKey(profile.username)) {
             System.err.println("Account of the username '${profile.username}' already exists")
@@ -69,7 +68,7 @@ internal fun addMinecraftAccount(accountFile: File): Int {
         accounts[profile.username] = profile
         writeAccountsToFile(accountFile, accounts)
 
-        println("Successfully added a new Minecraft account: ${profile.username}/${UUIDUtils.uuidToString(profile.uuid)}")
+        println("Successfully added a new Minecraft account: ${profile.username}/${UuidUtils.uuidToString(profile.uuid)}")
         return 0
     } catch (exception: Throwable) {
         System.err.println("An error occurred while adding a Minecraft account")

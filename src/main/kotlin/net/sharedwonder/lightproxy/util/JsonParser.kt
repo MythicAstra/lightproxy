@@ -14,16 +14,26 @@
  * limitations under the License.
  */
 
-@file:JvmName("Constants")
+package net.sharedwonder.lightproxy.util
 
-package net.sharedwonder.lightproxy
+import java.io.Reader
+import java.io.StringReader
+import com.google.gson.stream.JsonReader
 
-const val PID_CH_HANDSHAKE: Int = 0x0
-const val PID_CL_REQUEST_LOGIN: Int = 0x0
-const val PID_CL_ENCRYPTION_RESPONSE: Int = 0x1
-const val PID_SL_REQUEST_ENCRYPTION: Int = 0x1
-const val PID_SL_LOGIN_SUCCESS: Int = 0x2
-const val PID_SL_ENABLE_COMPRESSION: Int = 0x3
-const val PID_SP_V47_SET_COMPRESSION_LEVEL: Int = 0x46
+open class JsonParser(val reader: Reader) : JsonReader(reader) {
+    constructor(string: String) : this(StringReader(string))
 
-const val DEFAULT_PORT: Int = 25565
+    fun <R> nextObject(block: JsonParser.() -> R): R {
+        beginObject()
+        val result = block()
+        endObject()
+        return result
+    }
+
+    fun <R> nextArray(block: JsonParser.() -> R): R {
+        beginArray()
+        val result = block()
+        endArray()
+        return result
+    }
+}

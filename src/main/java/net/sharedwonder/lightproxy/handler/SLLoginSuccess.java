@@ -16,10 +16,12 @@
 
 package net.sharedwonder.lightproxy.handler;
 
+import java.util.UUID;
 import io.netty.buffer.ByteBuf;
 import net.sharedwonder.lightproxy.ConnectionContext;
 import net.sharedwonder.lightproxy.Constants;
 import net.sharedwonder.lightproxy.packet.HandledFlag;
+import net.sharedwonder.lightproxy.packet.PacketUtils;
 import net.sharedwonder.lightproxy.packet.S2CPacketHandler;
 import net.sharedwonder.lightproxy.util.ConnectionState;
 import org.apache.logging.log4j.LogManager;
@@ -34,6 +36,7 @@ public class SLLoginSuccess implements S2CPacketHandler {
     @Override
     public HandledFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
         context.setConnectionState(ConnectionState.PLAY);
+        context.setPlayerUuid(UUID.fromString(PacketUtils.readUtf8String(in)));
         LOGGER.info(() -> "Client successfully logged in, username: " + context.getPlayerUsername());
         context.afterLogin();
         return HandledFlag.PASSED;

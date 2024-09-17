@@ -16,7 +16,7 @@
 
 package net.sharedwonder.lightproxy.mcauth.msa
 
-enum class MSAAuthTokenType(val value: String, val queryParamName: String) {
+enum class MsaAuthTokenType(val value: String, val queryParamName: String) {
     AUTHORIZATION_CODE("authorization_code", "code"),
 
     REFRESH_TOKEN("refresh_token", "refresh_token")

@@ -32,7 +32,7 @@ public class SLEnableCompression implements S2CPacketHandler {
     @Override
     public HandledFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
         context.setCompressionThreshold(PacketUtils.readVarint(in));
-        if (context.getClientAddress().equals("127.0.0.1") || context.getClientAddress().equals("::1")) {
+        if (context.isClientFromLocalhost()) {
             return HandledFlag.BLOCKED;
         }
         context.setEnabledCompressionForClient(true);

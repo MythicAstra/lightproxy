@@ -17,6 +17,7 @@
 package net.sharedwonder.lightproxy
 
 import java.util.Queue
+import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.function.Function
 import java.util.function.Supplier
@@ -55,12 +56,16 @@ class ConnectionContext(private val lightProxy: LightProxy) {
 
     var isEnabledCompressionForClient: Boolean = false
 
+    var isClientFromLocalhost: Boolean = false
+        private set
+
     private var _clientAddress: String? = null
     var clientAddress: String
         get() = checkNotNull(_clientAddress) { "clientAddress is not set" }
         set(value) {
             check(_clientAddress == null)
             _clientAddress = value
+            isClientFromLocalhost = value == "127.0.0.1" || value == "::1"
         }
 
     private var _protocolVersion: Int? = null
@@ -77,6 +82,14 @@ class ConnectionContext(private val lightProxy: LightProxy) {
         set(value) {
             check(_playerUsername == null)
             _playerUsername = value
+        }
+
+    private var _playerUuid: UUID? = null
+    var playerUuid: UUID
+        get() = checkNotNull(_playerUuid) { "playerUuid is not set" }
+        set(value) {
+            check(_playerUuid == null)
+            _playerUuid = value
         }
 
     fun <T : ExternalContext> getExternalContext(type: Class<T>): T = type.cast(externalContexts[type])

@@ -27,11 +27,9 @@ public final class ConfigManager {
     @Nullable
     private static File configDir;
 
-    public static void init(File configDir) {
-        synchronized (ConfigManager.class) {
-            if (ConfigManager.configDir != null) {
-                throw new IllegalStateException("ConfigManager has already been initialized");
-            }
+    public static synchronized void init(File configDir) {
+        if (ConfigManager.configDir != null) {
+            throw new IllegalStateException("ConfigManager has already been initialized");
         }
         ConfigManager.configDir = Objects.requireNonNull(configDir);
     }
@@ -47,10 +45,17 @@ public final class ConfigManager {
             name = name + '.' + annotation.type().getFileExtension();
         }
         var file = new File(configDir, name);
-        try (var reader = new FileReader(file)) {
-            return annotation.type().parse(type, reader);
-        } catch (Exception exception) {
-            throw new RuntimeException("Failed to get the configuration", exception);
+        if (file.exists()) {
+            try (var reader = new FileReader(file)) {
+                return annotation.type().parse(type, reader);
+            } catch (Exception exception) {
+                throw new RuntimeException("Failed to get the configuration", exception);
+            }
+        }
+        try {
+            return type.getConstructor().newInstance();
+        } catch (ReflectiveOperationException exception) {
+            throw new IllegalArgumentException("Failed to instantiate the configuration class", exception);
         }
     }
 }

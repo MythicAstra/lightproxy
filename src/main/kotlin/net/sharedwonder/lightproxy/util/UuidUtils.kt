@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package net.sharedwonder.lightproxy.mcauth.msa
+package net.sharedwonder.lightproxy.util
 
-import com.google.gson.annotations.SerializedName
+import java.util.UUID
 
-data class MSAAuthResponse(
-    @SerializedName("access_token")
-    val accessToken: String,
+object UuidUtils {
+    @JvmStatic
+    @OptIn(ExperimentalStdlibApi::class)
+    fun stringToUuid(uuid: String): UUID = UUID(uuid.take(16).hexToLong(), uuid.substring(16).hexToLong())
 
-    @SerializedName("refresh_token")
-    val refreshToken: String,
-
-    @SerializedName("expires_in")
-    val expiresIn: Int
-)
+    @JvmStatic
+    @OptIn(ExperimentalStdlibApi::class)
+    fun uuidToString(uuid: UUID): String = "${uuid.mostSignificantBits.toHexString()}${uuid.leastSignificantBits.toHexString()}"
+}

@@ -20,12 +20,10 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.InaccessibleObjectException;
 import java.util.Properties;
-import com.google.gson.Gson;
+import net.sharedwonder.lightproxy.util.JsonUtils;
 
 public enum ConfigFileType {
     JSON {
-        private static final Gson GSON = new Gson();
-
         @Override
         public String getFileExtension() {
             return "json";
@@ -33,7 +31,7 @@ public enum ConfigFileType {
 
         @Override
         public <T> T parse(Class<T> type, Reader reader) {
-            return GSON.fromJson(reader, type);
+            return JsonUtils.fromJson(reader, type);
         }
     },
     PROPERTIES {
@@ -51,7 +49,7 @@ public enum ConfigFileType {
                 throw new RuntimeException("Failed to read the configuration file", exception);
             }
 
-            Object obj;
+            T obj;
             try {
                 obj = type.getConstructor().newInstance();
             } catch (ReflectiveOperationException exception) {
@@ -71,7 +69,7 @@ public enum ConfigFileType {
                     throw new IllegalArgumentException("Failed to set the field", exception);
                 }
             }
-            return type.cast(obj);
+            return obj;
         }
     };
 

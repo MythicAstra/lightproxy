@@ -19,15 +19,13 @@ package net.sharedwonder.lightproxy.addon
 import java.io.File
 import java.net.URLClassLoader
 import java.util.jar.JarFile
-import com.google.gson.Gson
+import net.sharedwonder.lightproxy.util.JsonUtils
 import org.apache.logging.log4j.LogManager
 
 object AddonLoader {
     private const val INFO_FILE_NAME: String = "lightproxy-addon.json"
 
     private val logger = LogManager.getLogger(AddonLoader::class.java)
-
-    private val gson = Gson()
 
     private val addons = HashMap<String, AddonInfo>()
 
@@ -60,7 +58,7 @@ object AddonLoader {
         try {
             JarFile(file).use {
                 it.getInputStream(it.getJarEntry(INFO_FILE_NAME)).reader().use { reader ->
-                    info = gson.fromJson(reader, AddonInfo::class.java)
+                    info = JsonUtils.fromJson<AddonInfo>(reader)
                 }
             }
         } catch (exception: Exception) {

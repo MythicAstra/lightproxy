@@ -60,7 +60,7 @@ abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAdapter p
 
             if (remainingUnreadSize > 0) {
                 var available = messageBuffer.readableBytes();
-                assert buffer != null; 
+                assert buffer != null;
                 buffer.writeBytes(messageBuffer);
                 remainingUnreadSize -= available;
                 if (remainingUnreadSize > 0) {
@@ -135,7 +135,7 @@ abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAdapter p
     }
 
     private boolean handle(ByteBufAllocator allocator, ByteBuf out) throws Exception {
-        assert buffer != null; 
+        assert buffer != null;
         var startIndex = buffer.readerIndex();
         int size;
         try {

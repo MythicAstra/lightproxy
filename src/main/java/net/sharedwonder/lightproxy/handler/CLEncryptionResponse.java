@@ -55,12 +55,15 @@ public class CLEncryptionResponse implements C2SPacketHandler {
 
         var profile = accounts.get(username);
         if (profile != null) {
-            if (!profile.hasJoinedServer(calcServerId(handshakingContext.baseServerId, secretKey, handshakingContext.proxyServerPublicKey),
-                context.getClientAddress())) {
-                throw new RuntimeException("Unable to authenticate the client (hasJoinedServer check): " + username);
+            if (!context.isClientFromLocalhost()) {
+                if (!profile.hasJoinedServer(calcServerId(handshakingContext.baseServerId, secretKey, handshakingContext.proxyServerPublicKey), context.getClientAddress())) {
+                    throw new RuntimeException("Unable to authenticate the client (hasJoinedServer check): " + username);
+                }
+
+                LOGGER.info(() -> "Client authenticated, username: " + context.getPlayerUsername());
             }
 
-            LOGGER.info(() -> "Client authenticated, username: " + context.getPlayerUsername());
+            LOGGER.info(() -> "Client from localhost, not authenticating, username: " + context.getPlayerUsername());
 
             if (!Arrays.equals(verifyToken, handshakingContext.verifyToken)) {
                 throw new RuntimeException("Unable to authenticate the client (verifyToken check): " + username);

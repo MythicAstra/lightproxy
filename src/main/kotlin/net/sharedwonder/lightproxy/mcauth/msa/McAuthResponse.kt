@@ -18,7 +18,7 @@ package net.sharedwonder.lightproxy.mcauth.msa
 
 import com.google.gson.annotations.SerializedName
 
-data class MCAuthResponse(
+data class McAuthResponse(
     @SerializedName("access_token")
     val accessToken: String,
 

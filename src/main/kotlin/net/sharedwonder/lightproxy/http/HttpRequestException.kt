@@ -18,7 +18,7 @@ package net.sharedwonder.lightproxy.http
 
 import java.io.Serial
 
-class HTTPRequestException : RuntimeException {
+class HttpRequestException : RuntimeException {
     val responseCode: Int?
 
     val responseContent: String?
@@ -26,7 +26,7 @@ class HTTPRequestException : RuntimeException {
     override val message: String?
         get() = if (super.message == null) additionalInfo() else super.message + (additionalInfo() ?: "")
 
-    constructor(message: String?, responseCode: Int, responseContent: String) : super(message) {
+    constructor(message: String?, responseCode: Int, responseContent: String?) : super(message) {
         this.responseCode = responseCode
         this.responseContent = responseContent
     }
@@ -37,9 +37,7 @@ class HTTPRequestException : RuntimeException {
     }
 
     private fun additionalInfo(): String? =
-        if (responseCode != null) {
-            "\n- Response code: $responseCode" + (if (responseContent != null) "\n- Response content: $responseContent" else "")
-        } else null
+        responseCode?.let { "\n- Response code: $it" + (if (responseContent != null) "\n- Response content: $responseContent" else "") }
 
     private companion object {
         @Serial private const val serialVersionUID = 3653710697125111531L

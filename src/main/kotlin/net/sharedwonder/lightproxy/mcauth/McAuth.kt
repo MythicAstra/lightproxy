@@ -18,12 +18,12 @@ package net.sharedwonder.lightproxy.mcauth
 
 import net.sharedwonder.lightproxy.util.PlayerProfile
 
-interface MCAuth {
+interface McAuth {
     val accessToken: String
 
     val expirationTime: Long
 
-    fun refresh(): MCAuth
+    fun refresh(): McAuth
 
     fun createProfile(): PlayerProfile
 }
