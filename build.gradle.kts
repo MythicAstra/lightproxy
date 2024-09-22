@@ -1,12 +1,6 @@
 plugins {
-    java
-    `maven-publish`
-    signing
     kotlin("jvm") version "2.0.20"
 }
-
-val repoUrl = "https://github.com/sharedwonder/lightproxy"
-val pkgUrl = "https://maven.pkg.github.com/sharedwonder/maven-repository"
 
 group = "net.sharedwonder"
 version = property("version").toString()
@@ -14,7 +8,6 @@ version = property("version").toString()
 repositories {
     mavenLocal()
     mavenCentral()
-    maven(pkgUrl)
 }
 
 dependencies {
@@ -42,56 +35,6 @@ java {
 
 kotlin {
     compilerOptions.freeCompilerArgs.add("-Xjvm-default=all")
-}
-
-publishing {
-    repositories {
-        mavenLocal()
-        maven(pkgUrl) {
-            name = "GitHubPackages"
-            credentials {
-                username = findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
-                password = findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-
-    publications {
-        register<MavenPublication>("maven") {
-            from(components["java"])
-
-            pom {
-                name = project.name
-                description = project.description
-                url = repoUrl
-
-                licenses {
-                    license {
-                        name = "The Apache License, Version 2.0"
-                        url = "https://www.apache.org/licenses/LICENSE-2.0"
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = "sharedwonder"
-                        name = "Liu Baihao"
-                        email = "liubaihaohello@outlook.com"
-                    }
-                }
-
-                scm {
-                    connection = "scm:git:$repoUrl.git"
-                    developerConnection = "scm:git:$repoUrl.git"
-                    url = repoUrl
-                }
-            }
-        }
-    }
-}
-
-signing {
-    sign(publishing.publications["maven"])
 }
 
 tasks.withType<JavaCompile> {
