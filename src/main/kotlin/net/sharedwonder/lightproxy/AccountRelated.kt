@@ -26,30 +26,36 @@ import net.sharedwonder.lightproxy.util.JsonUtils
 import net.sharedwonder.lightproxy.util.PlayerProfile
 import net.sharedwonder.lightproxy.util.UuidUtils
 
-private const val MSA_LOGIN_URI = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code" +
-    "&scope=service::user.auth.xboxlive.com::MBI_SSL&redirect_uri=https://login.live.com/oauth20_desktop.srf"
+typealias AccountTable = Map<String, PlayerProfile>
+
+typealias MutableAccountTable = MutableMap<String, PlayerProfile>
 
 private val msaRedirectUriPattern = Pattern.compile("^\\s*http(s)?://login\\.live\\.com/oauth20_desktop\\.srf\\?code=([^&\\s]+)(.+)?\$")
 
-internal fun readAccountsFromFile(file: File): MutableMap<String, PlayerProfile> {
-    return if (file.isFile) {
+private val typeToken = TypeToken.getParameterized(Map::class.java, String::class.java, PlayerProfile::class.java)
+
+internal fun readAccountFile(file: File): MutableAccountTable =
+    if (file.isFile) {
         file.reader().use {
-            @Suppress("UNCHECKED_CAST")
-            JsonUtils.fromJson(it, TypeToken.getParameterized(Map::class.java, String::class.java, PlayerProfile::class.java)) as MutableMap<String, PlayerProfile>
+            @Suppress("unchecked_cast")
+            JsonUtils.fromJson(it, typeToken) as MutableAccountTable
         }
-    } else mutableMapOf()
+    } else {
+        mutableMapOf()
+    }
+
+internal fun writeAccountFile(file: File, accounts: AccountTable) {
+    JsonWriter(file.writer()).use {
+        it.setIndent("    ")
+        it.use { JsonUtils.toJson(accounts, Map::class.java, it) }
+    }
 }
 
-internal fun writeAccountsToFile(file: File, accounts: Map<String, PlayerProfile>) {
-    val jsonWriter = JsonWriter(file.writer())
-    jsonWriter.setIndent("    ")
-    jsonWriter.use { JsonUtils.toJson(accounts, Map::class.java, it) }
-}
-
-internal fun addMinecraftAccount(accountFile: File): Int {
+internal fun addAccount(accountFile: File): Int {
     try {
-        println("Open '$MSA_LOGIN_URI' to login your Microsoft Account.")
-        println("Then type the authorization code or the redirect URL here:")
+        println("Open 'https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code" +
+            "&scope=service::user.auth.xboxlive.com::MBI_SSL&redirect_uri=https://login.live.com/oauth20_desktop.srf' to login your Microsoft Account.")
+        println("Then input the authorization code or the redirect URI here:")
         val input = readlnOrNull()
         if (input.isNullOrBlank()) {
             System.err.println("You didn't input anything")
@@ -60,13 +66,13 @@ internal fun addMinecraftAccount(accountFile: File): Int {
         val code = if (matcher.matches()) matcher.group(2) else input.trim(Char::isWhitespace)
 
         val profile = McAuthWithMsa(MsaAuthTokenType.AUTHORIZATION_CODE, code).createProfile()
-        val accounts = readAccountsFromFile(accountFile)
+        val accounts = readAccountFile(accountFile)
         if (accounts.containsKey(profile.username)) {
-            System.err.println("Account of the username '${profile.username}' already exists")
+            System.err.println("The Minecraft account with the username '${profile.username}' already exists")
             return 1
         }
         accounts[profile.username] = profile
-        writeAccountsToFile(accountFile, accounts)
+        writeAccountFile(accountFile, accounts)
 
         println("Successfully added a new Minecraft account: ${profile.username}/${UuidUtils.uuidToString(profile.uuid)}")
         return 0
@@ -77,13 +83,13 @@ internal fun addMinecraftAccount(accountFile: File): Int {
     }
 }
 
-internal fun removeMinecraftAccount(accountFile: File, username: String): Int {
+internal fun removeAccount(accountFile: File, username: String): Int {
     try {
-        val accounts = readAccountsFromFile(accountFile)
+        val accounts = readAccountFile(accountFile)
         if (accounts.remove(username) == null) {
-            System.err.println("Account of the username '$username' was not found")
+            System.err.println("Cannot find the Minecraft account with the username '$username'")
         } else {
-            writeAccountsToFile(accountFile, accounts)
+            writeAccountFile(accountFile, accounts)
         }
 
         println("Successfully removed the specified Minecraft account")
@@ -95,9 +101,9 @@ internal fun removeMinecraftAccount(accountFile: File, username: String): Int {
     }
 }
 
-internal fun listMinecraftAccounts(accountFile: File): Int {
+internal fun listAccounts(accountFile: File): Int {
     try {
-        val accounts = readAccountsFromFile(accountFile)
+        val accounts = readAccountFile(accountFile)
         for ((_, profile) in accounts) {
             println("${profile.username}/${profile.uuid}")
         }

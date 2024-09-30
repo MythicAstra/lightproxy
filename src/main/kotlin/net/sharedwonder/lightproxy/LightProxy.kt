@@ -28,7 +28,6 @@ import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import net.sharedwonder.lightproxy.addon.AddonLoader
 import net.sharedwonder.lightproxy.config.ConfigManager
-import net.sharedwonder.lightproxy.util.PlayerProfile
 import org.apache.logging.log4j.LogManager
 
 class LightProxy(val bindPort: Int, host: String, port: Int, accountFile: File, addonDir: File, configDir: File) {
@@ -36,23 +35,23 @@ class LightProxy(val bindPort: Int, host: String, port: Int, accountFile: File, 
 
     val remotePort: Int
 
-    val accounts: MutableMap<String, PlayerProfile>?
+    val accounts: AccountTable?
 
     init {
         try {
             ConfigManager.init(configDir)
             AddonLoader.init(addonDir)
 
-            var accounts: MutableMap<String, PlayerProfile>? = null
+            var accounts: MutableAccountTable? = null
             if (accountFile.isFile) {
                 try {
-                    accounts = readAccountsFromFile(accountFile)
+                    accounts = readAccountFile(accountFile)
                 } catch (exception: Exception) {
                     logger.error("An error occurred while reading the accounts file", exception)
                 }
                 if (accounts != null && refreshTokensIfExpired(accounts)) {
                     try {
-                        writeAccountsToFile(accountFile, accounts)
+                        writeAccountFile(accountFile, accounts)
                     } catch (exception: Exception) {
                         logger.error("An error occurred while writing the accounts file", exception)
                     }
@@ -137,7 +136,7 @@ class LightProxy(val bindPort: Int, host: String, port: Int, accountFile: File, 
             return Pair(host, port)
         }
 
-        private fun refreshTokensIfExpired(accounts: MutableMap<String, PlayerProfile>): Boolean {
+        private fun refreshTokensIfExpired(accounts: MutableAccountTable): Boolean {
             var modified = false
             for (entry in accounts) {
                 val auth = entry.value.auth ?: continue

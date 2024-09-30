@@ -56,15 +56,15 @@ class McAuthWithMsa(tokenType: MsaAuthTokenType, authToken: String) : McAuth {
     }
 }
 
-private val msaAuthUri = URI("https://login.live.com/oauth20_token.srf")
+private val msaAuthUri = URI.create("https://login.live.com/oauth20_token.srf")
 
-private val xboxLiveAuthUri = URI("https://user.auth.xboxlive.com/user/authenticate")
+private val xboxLiveAuthUri = URI.create("https://user.auth.xboxlive.com/user/authenticate")
 
-private val xstsAuthUri = URI("https://xsts.auth.xboxlive.com/xsts/authorize")
+private val xstsAuthUri = URI.create("https://xsts.auth.xboxlive.com/xsts/authorize")
 
-private val mcAuthUri = URI("https://api.minecraftservices.com/authentication/login_with_xbox")
+private val mcAuthUri = URI.create("https://api.minecraftservices.com/authentication/login_with_xbox")
 
-private val mcAccountProfileUri = URI("https://api.minecraftservices.com/minecraft/profile")
+private val mcAccountProfileUri = URI.create("https://api.minecraftservices.com/minecraft/profile")
 
 private fun msaAuthStep(tokenType: MsaAuthTokenType, authToken: String): MsaAuthResponse {
     val body = mapOf(

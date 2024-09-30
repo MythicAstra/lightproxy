@@ -17,8 +17,7 @@
 package net.sharedwonder.lightproxy.http
 
 sealed class HttpRequestResult {
-    val asResponse: Response
-        get() = if (this is Response) this else error("Not a response")
+    val asResponse: Response get() = this as Response
 
     inline fun onSuccess(block: SuccessResponse.() -> Unit): HttpRequestResult {
         if (this is SuccessResponse) {

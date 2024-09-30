@@ -75,9 +75,9 @@ fun main(args: Array<String>) {
         when {
             help -> showHelp(commander)
             version -> showVersion()
-            login -> addMinecraftAccount(File(accountFile))
-            logout != null -> removeMinecraftAccount(File(accountFile), logout!!)
-            listAccounts -> listMinecraftAccounts(File(accountFile))
+            login -> addAccount(File(accountFile))
+            logout != null -> removeAccount(File(accountFile), logout!!)
+            listAccounts -> listAccounts(File(accountFile))
             remoteAddress != null -> LightProxy.start(bindPort, remoteAddress!!, remotePort, File(accountFile), File(addonDir), File(configDir))
             else -> showHelp(commander)
         }

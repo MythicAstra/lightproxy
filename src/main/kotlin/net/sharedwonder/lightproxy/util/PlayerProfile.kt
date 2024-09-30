@@ -34,7 +34,7 @@ import com.google.gson.annotations.JsonAdapter
 import net.sharedwonder.lightproxy.http.HttpUtils
 import net.sharedwonder.lightproxy.mcauth.McAuth
 
-@JsonAdapter(PlayerProfile.JsonTypeAdapter::class)
+@JsonAdapter(PlayerProfile.JsonAdapter::class)
 data class PlayerProfile @JvmOverloads constructor(val username: String, val uuid: UUID, val auth: McAuth? = null) {
     fun joinServer(serverId: ByteArray) {
         checkNotNull(auth) { "This player profile has no authentication information" }
@@ -49,8 +49,8 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
             HttpRequest.newBuilder(joinServerUri)
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .header("Content-Type", "application/json; charset=utf-8")
-                .build()
-        ).onFailure { throw buildException("Failed to request to join the server for the player '$username/${UuidUtils.uuidToString(uuid)}' on Minecraft Session Server") }
+                .build())
+            .onFailure { throw buildException("Failed to request to join the server for the player '$username/${UuidUtils.uuidToString(uuid)}' on Minecraft Session Server") }
     }
 
     @JvmOverloads
@@ -62,50 +62,58 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
                 put("ip", clientIp)
             }
         }
-        val uri = "https://sessionserver.mojang.com/session/minecraft/hasJoined?" + HttpUtils.encodeMap(args)
 
-        return HttpUtils.request(HttpRequest.newBuilder(URI.create(uri)).GET().build())
+        return HttpUtils.request(HttpRequest.newBuilder(URI.create("https://sessionserver.mojang.com/session/minecraft/hasJoined?" + HttpUtils.encodeMap(args))).GET().build())
             .whenFailedByException { throw buildException("Failed to request to verify that the player '$username/${UuidUtils.uuidToString(uuid)}' has joined the server") }
             .asResponse.status.let { it == HttpURLConnection.HTTP_OK }
     }
 
-    internal class JsonTypeAdapter : JsonSerializer<PlayerProfile>, JsonDeserializer<PlayerProfile> {
+    internal class JsonAdapter : JsonSerializer<PlayerProfile>, JsonDeserializer<PlayerProfile> {
         override fun serialize(src: PlayerProfile?, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
             if (src == null) {
                 return JsonNull.INSTANCE
             }
 
-            val json = JsonObject()
-            json.addProperty("username", src.username)
-            json.addProperty("uuid", UuidUtils.uuidToString(src.uuid))
-            if (src.auth != null) {
-                json.add("auth", JsonObject().apply {
-                    addProperty("impl", src.auth.javaClass.typeName)
-                    add("data", context.serialize(src.auth))
-                })
+            return JsonObject().apply {
+                addProperty("username", src.username)
+                addProperty("uuid", UuidUtils.uuidToString(src.uuid))
+                if (src.auth != null) {
+                    add("auth", JsonObject().apply {
+                        addProperty("impl", src.auth.javaClass.name)
+                        add("data", context.serialize(src.auth))
+                    })
+                }
             }
-            return json
         }
 
-        override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): PlayerProfile {
-            try {
-                json as JsonObject
+        override fun deserialize(json: JsonElement, typeOfObj: Type, context: JsonDeserializationContext): PlayerProfile? {
+            if (json.isJsonNull) {
+                return null
+            }
+            if (json !is JsonObject) {
+                throw JsonParseException("Invalid player profile: $json")
+            }
 
+            try {
                 val username = json["username"].asString
                 val uuid = UuidUtils.stringToUuid(json["uuid"].asString)
+
                 val auth = json["auth"]?.let {
-                    if (!it.isJsonNull) {
-                        it as JsonObject
+                    if (it.isJsonNull) {
+                        null
+                    } else if (it is JsonObject) {
                         val impl = it["impl"].asString
                         val content = it["data"]
                         try {
                             context.deserialize<McAuth>(content, Class.forName(impl))
                         } catch (exception: ClassCastException) {
-                            throw RuntimeException("Not a MCAuth implementation: $impl")
+                            throw JsonParseException("Not a MCAuth implementation: $impl")
                         } catch (exception: ClassNotFoundException) {
-                            throw RuntimeException("MCAuth implementation not found: $impl")
+                            throw JsonParseException("MCAuth implementation not found: $impl")
                         }
-                    } else null
+                    } else {
+                        throw JsonParseException("Not an JSON object: $it")
+                    }
                 }
 
                 return PlayerProfile(username, uuid, auth)
@@ -116,4 +124,4 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
     }
 }
 
-private val joinServerUri = URI("https://sessionserver.mojang.com/session/minecraft/join")
+private val joinServerUri = URI.create("https://sessionserver.mojang.com/session/minecraft/join")

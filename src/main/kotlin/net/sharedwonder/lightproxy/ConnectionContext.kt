@@ -26,7 +26,6 @@ import net.sharedwonder.lightproxy.addon.ExternalContext
 import net.sharedwonder.lightproxy.crypt.EncryptionContext
 import net.sharedwonder.lightproxy.crypt.EncryptionDisabledContext
 import net.sharedwonder.lightproxy.util.ConnectionState
-import net.sharedwonder.lightproxy.util.PlayerProfile
 import org.apache.logging.log4j.LogManager
 
 class ConnectionContext(private val lightProxy: LightProxy) {
@@ -36,7 +35,7 @@ class ConnectionContext(private val lightProxy: LightProxy) {
 
     val remotePort: Int get() = lightProxy.remotePort
 
-    val accounts: Map<String, PlayerProfile>? get() = lightProxy.accounts
+    val accounts: AccountTable? get() = lightProxy.accounts
 
     val attachedC2SPackets: Queue<ByteBuf> = ConcurrentLinkedQueue()
 
