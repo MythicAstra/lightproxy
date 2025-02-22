@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package net.sharedwonder.lightproxy;
 
 import java.net.InetSocketAddress;
-import javax.annotation.Nullable;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -29,6 +28,7 @@ import io.netty.channel.ChannelOption;
 import net.sharedwonder.lightproxy.packet.PacketType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 final class ProxyServerHandler extends ProxyChannelHandler {
     @Nullable

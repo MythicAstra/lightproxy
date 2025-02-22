@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ internal fun addAccount(accountFile: File): Int {
         val matcher = msaRedirectUriPattern.matcher(input)
         val code = if (matcher.matches()) matcher.group(2) else input.trim(Char::isWhitespace)
 
-        val profile = McAuthWithMsa(MsaAuthTokenType.AUTHORIZATION_CODE, code).createProfile()
+        val profile = McAuthWithMsa(MsaAuthTokenType.AUTHORIZATION_CODE, code).profile()
         val accounts = readAccountFile(accountFile)
         if (accounts.containsKey(profile.username)) {
             System.err.println("The Minecraft account with the username '${profile.username}' already exists")

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.UUID;
 import io.netty.buffer.ByteBuf;
 import net.sharedwonder.lightproxy.ConnectionContext;
 import net.sharedwonder.lightproxy.Constants;
-import net.sharedwonder.lightproxy.packet.HandledFlag;
+import net.sharedwonder.lightproxy.packet.HandleFlag;
 import net.sharedwonder.lightproxy.packet.PacketUtils;
 import net.sharedwonder.lightproxy.packet.S2CPacketHandler;
 import net.sharedwonder.lightproxy.util.ConnectionState;
@@ -34,12 +34,12 @@ public class SLLoginSuccess implements S2CPacketHandler {
     }
 
     @Override
-    public HandledFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
+    public HandleFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
         context.setConnectionState(ConnectionState.PLAY);
         context.setPlayerUuid(UUID.fromString(PacketUtils.readUtf8String(in)));
         LOGGER.info(() -> "Client successfully logged in, username: " + context.getPlayerUsername());
         context.afterLogin();
-        return HandledFlag.PASSED;
+        return HandleFlag.PASSED;
     }
 
     private static final Logger LOGGER = LogManager.getLogger(SLLoginSuccess.class);

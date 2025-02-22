@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import net.sharedwonder.lightproxy.crypt.CryptUtils;
 import net.sharedwonder.lightproxy.crypt.EncryptionEnabledContext;
 import net.sharedwonder.lightproxy.crypt.EncryptionHandshakingContext;
 import net.sharedwonder.lightproxy.packet.C2SPacketHandler;
-import net.sharedwonder.lightproxy.packet.HandledFlag;
+import net.sharedwonder.lightproxy.packet.HandleFlag;
 import net.sharedwonder.lightproxy.packet.PacketUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,7 +39,7 @@ public class CLEncryptionResponse implements C2SPacketHandler {
     }
 
     @Override
-    public HandledFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
+    public HandleFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
         if (!(context.getEncryptionContext() instanceof EncryptionHandshakingContext handshakingContext)) {
             throw new IllegalStateException("Encryption context is not handshaking context");
         }
@@ -79,7 +79,7 @@ public class CLEncryptionResponse implements C2SPacketHandler {
         PacketUtils.writeByteArray(transformed, CryptUtils.encryptData(handshakingContext.originServerPublicKey, secretKey.getEncoded()));
         PacketUtils.writeByteArray(transformed, CryptUtils.encryptData(handshakingContext.originServerPublicKey, handshakingContext.verifyToken));
 
-        return HandledFlag.TRANSFORMED;
+        return HandleFlag.TRANSFORMED;
     }
 
     private static final Logger LOGGER = LogManager.getLogger(CLEncryptionResponse.class);

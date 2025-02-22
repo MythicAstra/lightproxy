@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,24 +22,14 @@ import java.lang.reflect.InaccessibleObjectException;
 import java.util.Properties;
 import net.sharedwonder.lightproxy.util.JsonUtils;
 
-public enum ConfigFileType {
+public enum ConfigFormat {
     JSON {
-        @Override
-        public String getFileExtension() {
-            return "json";
-        }
-
         @Override
         public <T> T parse(Class<T> type, Reader reader) {
             return JsonUtils.fromJson(reader, type);
         }
     },
     PROPERTIES {
-        @Override
-        public String getFileExtension() {
-            return "properties";
-        }
-
         @Override
         public <T> T parse(Class<T> type, Reader reader) {
             var properties = new Properties();
@@ -56,9 +46,9 @@ public enum ConfigFileType {
                 throw new IllegalArgumentException("Failed to instantiate the configuration class", exception);
             }
             for (var field : type.getDeclaredFields()) {
-                var annotation = field.getDeclaredAnnotation(PropertyName.class);
-                var name = annotation != null ? annotation.value() : field.getName();
-                var value = properties.get(name);
+                var annotation = field.getDeclaredAnnotation(ConfigPropertyName.class);
+                var key = annotation != null ? annotation.value() : field.getName();
+                var value = properties.get(key);
                 if (value == null) {
                     continue;
                 }
@@ -72,8 +62,6 @@ public enum ConfigFileType {
             return obj;
         }
     };
-
-    public abstract String getFileExtension();
 
     public abstract <T> T parse(Class<T> type, Reader reader) throws Exception;
 }

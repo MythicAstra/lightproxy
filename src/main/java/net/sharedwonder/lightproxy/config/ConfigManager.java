@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package net.sharedwonder.lightproxy.config;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Objects;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public final class ConfigManager {
     private ConfigManager() {}
@@ -40,14 +40,11 @@ public final class ConfigManager {
             throw new IllegalArgumentException("The specified class is missing @net.sharedwonder.lightproxy.config.Config");
         }
 
-        var name = annotation.name();
-        if (!annotation.withoutExtension() && name.indexOf('.') == -1) {
-            name = name + '.' + annotation.type().getFileExtension();
-        }
-        var file = new File(configDir, name);
+        var filename = annotation.filename();
+        var file = new File(configDir, filename);
         if (file.exists()) {
             try (var reader = new FileReader(file)) {
-                return annotation.type().parse(type, reader);
+                return annotation.format().parse(type, reader);
             } catch (Exception exception) {
                 throw new RuntimeException("Failed to get the configuration", exception);
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ object HttpUtils {
     private val httpClient = HttpClient.newHttpClient()
 
     @JvmStatic
-    fun request(request: HttpRequest): HttpRequestResult {
+    fun sendRequest(request: HttpRequest): HttpRequestResult {
         try {
             val response = httpClient.send(request, BodyHandlers.ofByteArray())
             return if (response.statusCode() >= 400) {

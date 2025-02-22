@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,17 +40,17 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
         checkNotNull(auth) { "This player profile has no authentication information" }
 
         val body = JsonBuilder().objectValue {
-            entry("accessToken", auth.accessToken)
-            entry("selectedProfile", UuidUtils.uuidToString(uuid))
-            entry("serverId", BigInteger(serverId).toString(16))
+            "accessToken" value auth.accessToken
+            "selectedProfile" value UuidUtils.uuidToString(uuid)
+            "serverId" value BigInteger(serverId).toString(16)
         }.toString()
 
-        HttpUtils.request(
+        HttpUtils.sendRequest(
             HttpRequest.newBuilder(joinServerUri)
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .header("Content-Type", "application/json; charset=utf-8")
                 .build())
-            .onFailure { throw buildException("Failed to request to join the server for the player '$username/${UuidUtils.uuidToString(uuid)}' on Minecraft Session Server") }
+            .onFailure { throw newException("Failed to request to join the server for the player '$username/${UuidUtils.uuidToString(uuid)}' on Minecraft Session Server") }
     }
 
     @JvmOverloads
@@ -63,8 +63,8 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
             }
         }
 
-        return HttpUtils.request(HttpRequest.newBuilder(URI.create("https://sessionserver.mojang.com/session/minecraft/hasJoined?" + HttpUtils.encodeMap(args))).GET().build())
-            .whenFailedByException { throw buildException("Failed to request to verify that the player '$username/${UuidUtils.uuidToString(uuid)}' has joined the server") }
+        return HttpUtils.sendRequest(HttpRequest.newBuilder(URI.create("https://sessionserver.mojang.com/session/minecraft/hasJoined?" + HttpUtils.encodeMap(args))).GET().build())
+            .whenFailedByException { throw newException("Failed to request to verify that the player '$username/${UuidUtils.uuidToString(uuid)}' has joined the server") }
             .asResponse.status.let { it == HttpURLConnection.HTTP_OK }
     }
 

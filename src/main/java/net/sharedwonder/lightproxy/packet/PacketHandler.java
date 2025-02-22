@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,5 +22,5 @@ import net.sharedwonder.lightproxy.ConnectionContext;
 public sealed interface PacketHandler permits C2SPacketHandler, S2CPacketHandler {
     int getId();
 
-    HandledFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) throws Exception;
+    HandleFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) throws Exception;
 }

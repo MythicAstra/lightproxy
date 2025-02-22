@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ sealed class HttpRequestResult {
     sealed interface Failure {
         val interrupted: Boolean
 
-        fun buildException(message: String? = null): HttpRequestException
+        fun newException(message: String? = null): HttpRequestException
     }
 
     class SuccessResponse(override val status: Int, override val content: ByteArray?) : HttpRequestResult(), Response {
@@ -87,12 +87,12 @@ sealed class HttpRequestResult {
 
         override val interrupted: Boolean get() = false
 
-        override fun buildException(message: String?): HttpRequestException = HttpRequestException(message, status, contentAsUtf8String)
+        override fun newException(message: String?): HttpRequestException = HttpRequestException(message, status, contentAsUtf8String)
     }
 
     class FailedByException(val exception: Throwable) : HttpRequestResult(), Failure {
         override val interrupted: Boolean = exception is InterruptedException
 
-        override fun buildException(message: String?): HttpRequestException = HttpRequestException(message, exception)
+        override fun newException(message: String?): HttpRequestException = HttpRequestException(message, exception)
     }
 }

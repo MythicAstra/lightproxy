@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ class LightProxy(val bindPort: Int, host: String, port: Int, accountFile: File, 
                     modified = true
                     logger.info(fun(): String = "The access token of the Minecraft account '${entry.key}' is expired, refreshing...")
                     try {
-                        entry.setValue(auth.refresh().createProfile())
+                        entry.setValue(auth.refresh().profile())
                     } catch (exception: RuntimeException) {
                         logger.error("Failed to refresh the access token of the Minecraft account '${entry.key}'", exception)
                     }

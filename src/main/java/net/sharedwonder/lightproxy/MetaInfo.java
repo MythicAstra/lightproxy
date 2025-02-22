@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,8 @@ public final class MetaInfo {
                     version = reader.nextString();
                     break;
                 }
+                reader.skipValue();
             }
-            reader.endObject();
             if (version == null) {
                 throw new Error("version not found in 'version.json'");
             }

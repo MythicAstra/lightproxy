@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package net.sharedwonder.lightproxy.packet;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.sharedwonder.lightproxy.Constants;
 import net.sharedwonder.lightproxy.handler.CHHandshake;
 import net.sharedwonder.lightproxy.handler.CLEncryptionResponse;
@@ -27,6 +26,7 @@ import net.sharedwonder.lightproxy.handler.SLEnableCompression;
 import net.sharedwonder.lightproxy.handler.SLLoginSuccess;
 import net.sharedwonder.lightproxy.handler.SLRequestEncryption;
 import net.sharedwonder.lightproxy.handler.SPV47SetCompressionLevel;
+import org.jspecify.annotations.Nullable;
 
 public final class PacketHandlers {
     private PacketHandlers() {}

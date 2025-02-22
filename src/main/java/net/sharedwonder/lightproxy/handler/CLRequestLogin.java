@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import io.netty.buffer.ByteBuf;
 import net.sharedwonder.lightproxy.ConnectionContext;
 import net.sharedwonder.lightproxy.Constants;
 import net.sharedwonder.lightproxy.packet.C2SPacketHandler;
-import net.sharedwonder.lightproxy.packet.HandledFlag;
+import net.sharedwonder.lightproxy.packet.HandleFlag;
 import net.sharedwonder.lightproxy.packet.PacketUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,10 +32,10 @@ public class CLRequestLogin implements C2SPacketHandler {
     }
 
     @Override
-    public HandledFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
+    public HandleFlag handle(ConnectionContext context, ByteBuf in, ByteBuf transformed) {
         context.setPlayerUsername(PacketUtils.readUtf8String(in));
         LOGGER.info(() -> "Client requested to login, username: " + context.getPlayerUsername());
-        return HandledFlag.PASSED;
+        return HandleFlag.PASSED;
     }
 
     private static final Logger LOGGER = LogManager.getLogger(CLRequestLogin.class);

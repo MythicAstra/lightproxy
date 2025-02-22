@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ fun main(args: Array<String>) {
 
 private fun showHelp(commander: JCommander): Int {
     println("${MetaInfo.NAME} - A Lightweight Minecraft Proxy Server")
-    println("Copyright (C) 2024 sharedwonder (Liu Baihao).")
+    println("Copyright (C) 2025 MythicAstra")
     println()
     val builder = StringBuilder()
     UnixStyleUsageFormatter(commander).usage(builder)

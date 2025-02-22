@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 sharedwonder (Liu Baihao).
+ * Copyright (C) 2025 MythicAstra
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package net.sharedwonder.lightproxy;
 
-import javax.annotation.Nullable;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelFuture;
@@ -24,10 +23,11 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.sharedwonder.lightproxy.crypt.EncryptionContext;
-import net.sharedwonder.lightproxy.packet.HandledFlag;
+import net.sharedwonder.lightproxy.packet.HandleFlag;
 import net.sharedwonder.lightproxy.packet.PacketCompressionUtils;
 import net.sharedwonder.lightproxy.packet.PacketType;
 import net.sharedwonder.lightproxy.packet.PacketUtils;
+import org.jspecify.annotations.Nullable;
 
 abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAdapter permits ProxyBackendHandler, ProxyServerHandler {
     final ConnectionContext connectionContext;
@@ -140,7 +140,7 @@ abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAdapter p
         int size;
         try {
             size = PacketUtils.readVarint(buffer);
-        } catch (IndexOutOfBoundsException exception) {
+        } catch (IndexOutOfBoundsException ignored) {
             remainingUnreadSize = 1;
             buffer.readerIndex(startIndex);
 
@@ -193,9 +193,9 @@ abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAdapter p
     }
 
     private void handle(ByteBufAllocator allocator, int packetSize, ByteBuf in, ByteBuf out) throws Exception {
-        var before = in.readerIndex();
+        var headIndex = in.readerIndex();
         var id = PacketUtils.readVarint(in);
-        var idLength = in.readerIndex() - before;
+        var idLength = in.readerIndex() - headIndex;
         var handler = packetType.getPacketHandler(connectionContext.getConnectionState(), id);
 
         if (handler == null) {
@@ -209,12 +209,11 @@ abstract sealed class ProxyChannelHandler extends ChannelInboundHandlerAdapter p
         var transformed = allocator.heapBuffer();
         var flag = handler.handle(connectionContext, in, transformed);
 
-        if (flag == HandledFlag.PASSED) {
-            in.readerIndex(start);
+        if (flag == HandleFlag.PASSED) {
             PacketUtils.writeVarint(out, packetSize);
             PacketUtils.writeVarint(out, id);
-            out.writeBytes(in, in.readerIndex(), packetSize - idLength);
-        } else if (flag == HandledFlag.TRANSFORMED) {
+            out.writeBytes(in, start, packetSize - idLength);
+        } else if (flag == HandleFlag.TRANSFORMED) {
             var size = idLength + transformed.readableBytes();
             PacketUtils.writeVarint(out, size);
             PacketUtils.writeVarint(out, id);
