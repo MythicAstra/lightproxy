@@ -48,8 +48,10 @@ class McAuthWithMsa(tokenType: MsaAuthTokenType, authToken: String) : McAuth {
     override fun refresh(): McAuthWithMsa = McAuthWithMsa(MsaAuthTokenType.REFRESH_TOKEN, msaRefreshToken)
 
     override fun profile(): PlayerProfile {
-        val response = HttpUtils.sendRequest(HttpRequest.newBuilder(mcAccountProfileUri).GET().header("Authorization", "Bearer $accessToken").build())
-            .onFailure { throw newException("Failed to fetch the Minecraft account profile") }.asResponse.contentAsUtf8String
+        val request = HttpRequest.newBuilder(mcAccountProfileUri).GET().header("Authorization", "Bearer $accessToken").build()
+        val response = HttpUtils.sendRequest(request)
+            .onError { throw newException("Failed to fetch the Minecraft account profile") }
+            .asResponse.contentAsUtf8String
 
         val map = JsonUtils.fromJson<Map<*, *>>(response)
         return PlayerProfile(map["name"] as String, UuidUtils.stringToUuid(map["id"] as String), this)
@@ -80,7 +82,7 @@ private fun msaAuthStep(tokenType: MsaAuthTokenType, authToken: String): MsaAuth
             .POST(HttpRequest.BodyPublishers.ofString(HttpUtils.encodeMap(body)))
             .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
             .build()
-    ).onFailure { throw newException("Failed to get the MSA access token") }.asResponse.contentAsUtf8String
+    ).onError { throw newException("Failed to get the MSA access token") }.asResponse.contentAsUtf8String
 
     return JsonUtils.fromJson<MsaAuthResponse>(content)
 }
@@ -94,14 +96,14 @@ private fun xboxLiveAuthStep(msaToken: String): Pair<String, String> {
         }
         "RelyingParty" value "http://auth.xboxlive.com"
         "TokenType" value "JWT"
-    }.toString()
+    }.writer.toString()
 
     val content = HttpUtils.sendRequest(
         HttpRequest.newBuilder(xboxLiveAuthUri)
             .POST(HttpRequest.BodyPublishers.ofString(body))
             .header("Content-Type", "application/json; charset=utf-8")
             .build()
-    ).onFailure { throw newException("Failed to get the Xbox access token") }.asResponse.contentAsUtf8String
+    ).onError { throw newException("Failed to get the Xbox access token") }.asResponse.contentAsUtf8String
 
     val map = JsonUtils.fromJson<Map<*, *>>(content)
     val token = map["Token"] as String
@@ -117,27 +119,29 @@ private fun xstsAuthStep(xboxToken: String): String {
         }
         "RelyingParty" value "rp://api.minecraftservices.com/"
         "TokenType" value "JWT"
-    }.toString()
+    }.writer.toString()
 
     val content = HttpUtils.sendRequest(
         HttpRequest.newBuilder(xstsAuthUri)
             .POST(HttpRequest.BodyPublishers.ofString(body))
             .header("Content-Type", "application/json; charset=utf-8")
             .build()
-    ).onFailure { throw newException("Failed to get the XSTS access token") }.asResponse.contentAsUtf8String
+    ).onError { throw newException("Failed to get the XSTS access token") }.asResponse.contentAsUtf8String
 
     return JsonUtils.fromJson<Map<*, *>>(content)["Token"] as String
 }
 
 private fun mcAuthStep(xstsToken: String, xboxUserHash: String): McAuthResponse {
-    val body = JsonBuilder().objectValue { "identityToken" value "XBL3.0 x=$xboxUserHash;$xstsToken" }.toString()
+    val body = JsonBuilder().objectValue {
+        "identityToken" value "XBL3.0 x=$xboxUserHash;$xstsToken"
+    }.writer.toString()
 
     val content = HttpUtils.sendRequest(
         HttpRequest.newBuilder(mcAuthUri)
             .POST(HttpRequest.BodyPublishers.ofString(body))
             .header("Content-Type", "application/json; charset=utf-8")
             .build()
-    ).onFailure { throw newException("Failed to get the Minecraft access token") }.asResponse.contentAsUtf8String
+    ).onError { throw newException("Failed to get the Minecraft access token") }.asResponse.contentAsUtf8String
 
     return JsonUtils.fromJson<McAuthResponse>(content)
 }

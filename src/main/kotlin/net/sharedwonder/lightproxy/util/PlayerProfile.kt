@@ -43,14 +43,12 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
             "accessToken" value auth.accessToken
             "selectedProfile" value UuidUtils.uuidToString(uuid)
             "serverId" value BigInteger(serverId).toString(16)
-        }.toString()
+        }.writer.toString()
 
-        HttpUtils.sendRequest(
-            HttpRequest.newBuilder(joinServerUri)
-                .POST(HttpRequest.BodyPublishers.ofString(body))
-                .header("Content-Type", "application/json; charset=utf-8")
-                .build())
-            .onFailure { throw newException("Failed to request to join the server for the player '$username/${UuidUtils.uuidToString(uuid)}' on Minecraft Session Server") }
+        val request = HttpRequest.newBuilder(joinServerUri)
+            .POST(HttpRequest.BodyPublishers.ofString(body)).header("Content-Type", "application/json; charset=utf-8").build()
+        HttpUtils.sendRequest(request)
+            .onError { throw newException("Failed to request to join the server for the player '$username/${UuidUtils.uuidToString(uuid)}' on Minecraft Session Server") }
     }
 
     @JvmOverloads
@@ -63,8 +61,10 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
             }
         }
 
-        return HttpUtils.sendRequest(HttpRequest.newBuilder(URI.create("https://sessionserver.mojang.com/session/minecraft/hasJoined?" + HttpUtils.encodeMap(args))).GET().build())
-            .whenFailedByException { throw newException("Failed to request to verify that the player '$username/${UuidUtils.uuidToString(uuid)}' has joined the server") }
+        val uri = URI.create("https://sessionserver.mojang.com/session/minecraft/hasJoined?" + HttpUtils.encodeMap(args))
+        val request = HttpRequest.newBuilder(uri).GET().build()
+        return HttpUtils.sendRequest(request)
+            .onError { throw newException("Failed to request to verify that the player '$username/${UuidUtils.uuidToString(uuid)}' has joined the server") }
             .asResponse.status.let { it == HttpURLConnection.HTTP_OK }
     }
 
@@ -103,16 +103,16 @@ data class PlayerProfile @JvmOverloads constructor(val username: String, val uui
                         null
                     } else if (it is JsonObject) {
                         val impl = it["impl"].asString
-                        val content = it["data"]
+                        val data = it["data"]
                         try {
-                            context.deserialize<McAuth>(content, Class.forName(impl))
+                            context.deserialize<McAuth>(data, Class.forName(impl))
                         } catch (exception: ClassCastException) {
-                            throw JsonParseException("Not a MCAuth implementation: $impl")
+                            throw JsonParseException("Not an McAuth implementation: $impl")
                         } catch (exception: ClassNotFoundException) {
-                            throw JsonParseException("MCAuth implementation not found: $impl")
+                            throw JsonParseException("McAuth implementation not found: $impl")
                         }
                     } else {
-                        throw JsonParseException("Not an JSON object: $it")
+                        throw JsonParseException("Not a JSON object: $it")
                     }
                 }
 

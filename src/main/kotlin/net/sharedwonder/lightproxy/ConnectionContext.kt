@@ -35,7 +35,7 @@ class ConnectionContext(private val lightProxy: LightProxy) {
 
     val remotePort: Int get() = lightProxy.remotePort
 
-    val accounts: AccountTable? get() = lightProxy.accounts
+    val accounts: AccountMap? get() = lightProxy.accounts
 
     val attachedC2SPackets: Queue<ByteBuf> = ConcurrentLinkedQueue()
 
@@ -106,7 +106,7 @@ class ConnectionContext(private val lightProxy: LightProxy) {
             try {
                 externalContext.onConnect()
             } catch (exception: Throwable) {
-                logger.error("An error occurred while calling onConnect() on ${externalContext.javaClass.typeName}", exception)
+                logger.error("An error occurred while calling onConnect() on ${externalContext.javaClass.name}", exception)
             }
         }
     }
@@ -116,7 +116,7 @@ class ConnectionContext(private val lightProxy: LightProxy) {
             try {
                 externalContext.afterLogin()
             } catch (exception: Throwable) {
-                logger.error("An error occurred while calling afterLogin() on ${externalContext.javaClass.typeName}", exception)
+                logger.error("An error occurred while calling afterLogin() on ${externalContext.javaClass.name}", exception)
             }
         }
     }
@@ -126,7 +126,7 @@ class ConnectionContext(private val lightProxy: LightProxy) {
             try {
                 externalContext.onDisconnect()
             } catch (exception: Throwable) {
-                logger.error("An error occurred while calling onDisconnect() on ${externalContext.javaClass.typeName}", exception)
+                logger.error("An error occurred while calling onDisconnect() on ${externalContext.javaClass.name}", exception)
             }
         }
     }

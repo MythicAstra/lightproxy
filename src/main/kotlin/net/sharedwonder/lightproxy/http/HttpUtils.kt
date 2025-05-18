@@ -16,6 +16,7 @@
 
 package net.sharedwonder.lightproxy.http
 
+import java.io.IOException
 import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -28,13 +29,15 @@ object HttpUtils {
     fun sendRequest(request: HttpRequest): HttpRequestResult {
         try {
             val response = httpClient.send(request, BodyHandlers.ofByteArray())
-            return if (response.statusCode() >= 400) {
-                HttpRequestResult.ErrorResponse(response.statusCode(), response.body())
+            return if (response.statusCode() < 400) {
+                HttpRequestResult.Success(response.statusCode(), response.body())
             } else {
-                HttpRequestResult.SuccessResponse(response.statusCode(), response.body())
-            } 
-        } catch (exception: Throwable) {
-            return HttpRequestResult.FailedByException(exception)
+                HttpRequestResult.HttpError(response.statusCode(), response.body())
+            }
+        } catch (exception: IOException) {
+            return HttpRequestResult.IoError(exception)
+        } catch (exception: InterruptedException) {
+            return HttpRequestResult.Interruption(exception)
         }
     }
 

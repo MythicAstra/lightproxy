@@ -24,20 +24,23 @@ class HttpRequestException : RuntimeException {
     val responseContent: String?
 
     override val message: String?
-        get() = if (super.message == null) additionalInfo() else super.message + (additionalInfo() ?: "")
+        get() {
+            if (responseCode == null) {
+                return super.message
+            }
+            val info = "\n- Response code: $responseCode" + (if (responseContent != null) "\n- Response content: $responseContent" else "")
+            return if (super.message == null) info else super.message + info
+        }
 
     constructor(message: String?, responseCode: Int, responseContent: String?) : super(message) {
         this.responseCode = responseCode
         this.responseContent = responseContent
     }
 
-    constructor(message: String?, cause: Throwable?) : super(message, cause) {
+    constructor(message: String?, cause: Exception?) : super(message, cause) {
         responseCode = null
         responseContent = null
     }
-
-    private fun additionalInfo(): String? =
-        responseCode?.let { "\n- Response code: $it" + (if (responseContent != null) "\n- Response content: $responseContent" else "") }
 
     private companion object {
         @Serial private const val serialVersionUID = 3653710697125111531L

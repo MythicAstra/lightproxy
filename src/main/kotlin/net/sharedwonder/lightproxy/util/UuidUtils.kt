@@ -21,7 +21,7 @@ import java.util.UUID
 object UuidUtils {
     @JvmStatic
     @OptIn(ExperimentalStdlibApi::class)
-    fun stringToUuid(uuid: String): UUID = UUID(uuid.take(16).hexToLong(), uuid.substring(16).hexToLong())
+    fun stringToUuid(uuid: String): UUID = UUID(uuid.take(16).hexToLong(), uuid.drop(16).hexToLong())
 
     @JvmStatic
     @OptIn(ExperimentalStdlibApi::class)

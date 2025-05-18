@@ -40,42 +40,6 @@ open class JsonBuilder(val writer: Writer = StringWriter()) : JsonWriter(writer)
         return this
     }
 
-    fun entry(name: String, value: String?) {
-        name(name).value(value)
-    }
-
-    fun entry(name: String, value: Long) {
-        name(name).value(value)
-    }
-
-    fun entry(name: String, value: Float) {
-        name(name).value(value)
-    }
-
-    fun entry(name: String, value: Double) {
-        name(name).value(value)
-    }
-
-    fun entry(name: String, value: Number?) {
-        name(name).value(value)
-    }
-
-    fun entry(name: String, value: Boolean) {
-        name(name).value(value)
-    }
-
-    fun entry(name: String, value: Boolean?) {
-        name(name).value(value)
-    }
-
-    fun entryWithNullValue(name: String) {
-        name(name).nullValue()
-    }
-
-    fun entryWithJsonValue(name: String, value: String) {
-        name(name).jsonValue(value)
-    }
-
     inline infix fun String.objectValue(block: JsonBuilder.() -> Unit) {
         name(this).objectValue(block)
     }
@@ -116,9 +80,7 @@ open class JsonBuilder(val writer: Writer = StringWriter()) : JsonWriter(writer)
         name(this).nullValue()
     }
 
-    infix fun String.jsonValue(value: String?) {
-        name(this).value(value)
+    infix fun String.rawValue(value: String) {
+        name(this).jsonValue(value)
     }
-
-    override fun toString(): String = writer.toString()
 }

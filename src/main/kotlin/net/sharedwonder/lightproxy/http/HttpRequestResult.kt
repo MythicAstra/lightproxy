@@ -16,46 +16,48 @@
 
 package net.sharedwonder.lightproxy.http
 
+import java.io.IOException
+
 sealed class HttpRequestResult {
     val asResponse: Response get() = this as Response
 
-    inline fun onSuccess(block: SuccessResponse.() -> Unit): HttpRequestResult {
-        if (this is SuccessResponse) {
-            block(this)
-        }
-        return this
-    }
-
-    inline fun onFailure(block: Failure.() -> Unit): HttpRequestResult {
-        if (this is Failure) {
-            block(this)
-        }
-        return this
-    }
-
-    inline fun isResponse(block: Response.() -> Unit): HttpRequestResult {
+    inline fun onResponse(block: Response.() -> Unit): HttpRequestResult {
         if (this is Response) {
             block(this)
         }
         return this
     }
 
-    inline fun isErrorResponse(block: ErrorResponse.() -> Unit): HttpRequestResult {
-        if (this is ErrorResponse) {
+    inline fun onError(block: Error.() -> Unit): HttpRequestResult {
+        if (this is Error) {
             block(this)
         }
         return this
     }
 
-    inline fun whenFailedByException(block: FailedByException.() -> Unit): HttpRequestResult {
-        if (this is FailedByException) {
+    inline fun onSuccess(block: Success.() -> Unit): HttpRequestResult {
+        if (this is Success) {
             block(this)
         }
         return this
     }
 
-    inline fun whenInterrupted(block: FailedByException.() -> Unit): HttpRequestResult {
-        if (this is FailedByException && interrupted) {
+    inline fun onHttpError(block: HttpError.() -> Unit): HttpRequestResult {
+        if (this is HttpError) {
+            block(this)
+        }
+        return this
+    }
+
+    inline fun onIoError(block: IoError.() -> Unit): HttpRequestResult {
+        if (this is IoError) {
+            block(this)
+        }
+        return this
+    }
+
+    inline fun onInterruption(block: Interruption.() -> Unit): HttpRequestResult {
+        if (this is Interruption) {
             block(this)
         }
         return this
@@ -66,33 +68,25 @@ sealed class HttpRequestResult {
 
         val content: ByteArray?
 
-        val contentAsUtf8String: String?
-            get() = content?.toString(Charsets.UTF_8)
-
-        val error: Boolean
+        val contentAsUtf8String: String
+            get() = checkNotNull(content) { "No content available" }.toString(Charsets.UTF_8)
     }
 
-    sealed interface Failure {
-        val interrupted: Boolean
-
+    sealed interface Error {
         fun newException(message: String? = null): HttpRequestException
     }
 
-    class SuccessResponse(override val status: Int, override val content: ByteArray?) : HttpRequestResult(), Response {
-        override val error: Boolean get() = false
-    }
+    class Success(override val status: Int, override val content: ByteArray?) : HttpRequestResult(), Response
 
-    class ErrorResponse(override val status: Int, override val content: ByteArray?) : HttpRequestResult(), Response, Failure {
-        override val error: Boolean get() = false
-
-        override val interrupted: Boolean get() = false
-
+    class HttpError(override val status: Int, override val content: ByteArray?) : HttpRequestResult(), Response, Error {
         override fun newException(message: String?): HttpRequestException = HttpRequestException(message, status, contentAsUtf8String)
     }
 
-    class FailedByException(val exception: Throwable) : HttpRequestResult(), Failure {
-        override val interrupted: Boolean = exception is InterruptedException
+    class IoError(val ioException: IOException) : HttpRequestResult(), Error {
+        override fun newException(message: String?): HttpRequestException = HttpRequestException(message, ioException)
+    }
 
-        override fun newException(message: String?): HttpRequestException = HttpRequestException(message, exception)
+    class Interruption(val interruptedException: InterruptedException) : HttpRequestResult(), Error {
+        override fun newException(message: String?): HttpRequestException = HttpRequestException(message, interruptedException)
     }
 }

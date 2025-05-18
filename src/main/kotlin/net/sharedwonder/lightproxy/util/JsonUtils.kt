@@ -82,22 +82,32 @@ object JsonUtils {
     fun toJson(src: Any, type: Type): String = gson.toJson(src, type)
 
     @JvmStatic
-    fun toJson(src: Any, appendable: Appendable) = gson.toJson(src, appendable)
+    fun toJson(src: Any, appendable: Appendable) {
+        gson.toJson(src, appendable)
+    }
 
     @JvmStatic
-    fun toJson(src: Any, type: Type, appendable: Appendable) = gson.toJson(src, type, appendable)
+    fun toJson(src: Any, type: Type, appendable: Appendable) {
+        gson.toJson(src, type, appendable)
+    }
 
     @JvmStatic
-    fun toJson(src: Any, type: Type, writer: JsonWriter) = gson.toJson(src, type, writer)
+    fun toJson(src: Any, type: Type, writer: JsonWriter) {
+        gson.toJson(src, type, writer)
+    }
 
     @JvmStatic
     fun toJson(jsonElement: JsonElement): String = gson.toJson(jsonElement)
 
     @JvmStatic
-    fun toJson(jsonElement: JsonElement, appendable: Appendable) = gson.toJson(jsonElement, appendable)
+    fun toJson(jsonElement: JsonElement, appendable: Appendable) {
+        gson.toJson(jsonElement, appendable)
+    }
 
     @JvmStatic
-    fun toJson(jsonElement: JsonElement, writer: JsonWriter) = gson.toJson(jsonElement, writer)
+    fun toJson(jsonElement: JsonElement, writer: JsonWriter) {
+        gson.toJson(jsonElement, writer)
+    }
 
     @JvmStatic
     fun toJsonTree(src: Any): JsonElement = gson.toJsonTree(src)

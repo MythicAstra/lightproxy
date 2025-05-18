@@ -4,9 +4,9 @@
 !/src/
 !/.gitattributes
 !/.gitignore
-!/build.gradle
+!/build.gradle.kts
 !/gradle.properties
 !/gradlew
 !/gradlew.bat
 !/LICENSE
-!/settings.gradle
+!/settings.gradle.kts

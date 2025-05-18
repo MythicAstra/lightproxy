@@ -46,13 +46,13 @@ public final class ConfigManager {
             try (var reader = new FileReader(file)) {
                 return annotation.format().parse(type, reader);
             } catch (Exception exception) {
-                throw new RuntimeException("Failed to get the configuration", exception);
+                throw new RuntimeException("Unable to get the configuration", exception);
             }
         }
         try {
             return type.getConstructor().newInstance();
         } catch (ReflectiveOperationException exception) {
-            throw new IllegalArgumentException("Failed to instantiate the configuration class", exception);
+            throw new IllegalArgumentException("Unable to instantiate the configuration class: " + type.getName(), exception);
         }
     }
 }

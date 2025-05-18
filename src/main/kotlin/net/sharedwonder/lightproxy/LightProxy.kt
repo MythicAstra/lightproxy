@@ -23,7 +23,8 @@ import javax.naming.directory.InitialDirContext
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
-import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.MultiThreadIoEventLoopGroup
+import io.netty.channel.nio.NioIoHandler
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import net.sharedwonder.lightproxy.addon.AddonLoader
@@ -35,14 +36,14 @@ class LightProxy(val bindPort: Int, host: String, port: Int, accountFile: File, 
 
     val remotePort: Int
 
-    val accounts: AccountTable?
+    val accounts: AccountMap?
 
     init {
         try {
             ConfigManager.init(configDir)
             AddonLoader.init(addonDir)
 
-            var accounts: MutableAccountTable? = null
+            var accounts: MutableAccountMap? = null
             if (accountFile.isFile) {
                 try {
                     accounts = readAccountFile(accountFile)
@@ -71,8 +72,8 @@ class LightProxy(val bindPort: Int, host: String, port: Int, accountFile: File, 
     }
 
     fun run(): Int {
-        val bossGroup = NioEventLoopGroup()
-        val workerGroup = NioEventLoopGroup()
+        val bossGroup = MultiThreadIoEventLoopGroup(NioIoHandler.newFactory())
+        val workerGroup = MultiThreadIoEventLoopGroup(NioIoHandler.newFactory())
 
         try {
             val serverBootstrap = ServerBootstrap()
@@ -125,7 +126,7 @@ class LightProxy(val bindPort: Int, host: String, port: Int, accountFile: File, 
                     dirContext.close()
 
                     val srv = attributes["srv"].get().toString()
-                    logger.info(fun(): String = "Found a SRV record on $domain: $srv")
+                    logger.info(fun(): String = "Found an SRV record on $domain: $srv")
 
                     val content = srv.split(' ')
                     return Pair(content[3], content[2].toInt())
@@ -136,7 +137,7 @@ class LightProxy(val bindPort: Int, host: String, port: Int, accountFile: File, 
             return Pair(host, port)
         }
 
-        private fun refreshTokensIfExpired(accounts: MutableAccountTable): Boolean {
+        private fun refreshTokensIfExpired(accounts: MutableAccountMap): Boolean {
             var modified = false
             for (entry in accounts) {
                 val auth = entry.value.auth ?: continue

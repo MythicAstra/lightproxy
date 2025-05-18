@@ -43,7 +43,7 @@ public enum ConfigFormat {
             try {
                 obj = type.getConstructor().newInstance();
             } catch (ReflectiveOperationException exception) {
-                throw new IllegalArgumentException("Failed to instantiate the configuration class", exception);
+                throw new IllegalArgumentException("Unable to instantiate the configuration class: " + type.getName(), exception);
             }
             for (var field : type.getDeclaredFields()) {
                 var annotation = field.getDeclaredAnnotation(ConfigPropertyName.class);
@@ -56,7 +56,7 @@ public enum ConfigFormat {
                     field.setAccessible(true);
                     field.set(obj, value);
                 } catch (ReflectiveOperationException | InaccessibleObjectException exception) {
-                    throw new IllegalArgumentException("Failed to set the field", exception);
+                    throw new IllegalArgumentException("Unable to set the field", exception);
                 }
             }
             return obj;
